@@ -3,27 +3,14 @@ function load()
     // Init database
     DB_init(function(db)
     {
-        // Init PeersManager
-        var peersManager = new PeersManager(db)
-
-        // Init hasher
-        var hasher = new Hasher(db, policy)
-            hasher.onhashed  = function(fileentry)
-            {
-                // Notify the other peers about the new hashed file
-                peersManager._send_file_added(fileentry)
-            }
-            hasher.ondeleted = function(fileentry)
-            {
-                // Notify the other peers about the deleted file
-                peersManager._send_file_deleted(fileentry)
-            }
-
         // Init handshake manager
         var handshake = new HandshakeManager('../../json/handshake.json')
 
-        peersManager.setHandshake(handshake)
+        // Init PeersManager
+        var peersManager = new PeersManager(db)
+            peersManager.setHandshake(handshake)
 
+        // Config handshake manager
         handshake.onoffer = function(uid, sdp)
         {
             peersManager.onoffer(uid, sdp, function(uid, event)
@@ -76,6 +63,19 @@ function load()
 //                    })
 //            })
 //        }
+
+        // Init hasher
+        var hasher = new Hasher(db, policy)
+            hasher.onhashed  = function(fileentry)
+            {
+                // Notify the other peers about the new hashed file
+                peersManager._send_file_added(fileentry)
+            }
+            hasher.ondeleted = function(fileentry)
+            {
+                // Notify the other peers about the deleted file
+                peersManager._send_file_deleted(fileentry)
+            }
 
         // Init user interface
         var ui = new UI(db)
