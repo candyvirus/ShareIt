@@ -21,69 +21,61 @@ function load()
 
         // Init handshake manager
         var handshake = new HandshakeManager('../../json/handshake.json')
-            handshake.onoffer = function(uid, sdp)
-            {
-                var pc = peersManager.onoffer(uid, sdp, function(uid, event)
-                {
-                    console.error("Error creating DataChannel with peer "+uid);
-                    console.error(event);
-                })
-
-                // Send answer
-                pc.createAnswer(function(answer)
-                {
-                    handshake.sendAnswer(uid, answer.sdp)
-
-                    pc.setLocalDescription(new RTCSessionDescription({sdp:  answer.sdp,
-                                                                      type: 'answer'}))
-                });
-            }
-            handshake.onanswer = function(uid, sdp)
-            {
-                peersManager.onanswer(uid, sdp, function(uid)
-                {
-                    console.error("[handshake.answer] PeerConnection '" + uid +
-                                  "' not found");
-                })
-            }
-            handshake.onsynapse = function(uid)
-            {
-                peersManager.connectTo(uid, function(channel)
-                {
-                    handshake.pending_synapses--
-
-                    if(handshake.pending_synapses == 0)
-                       handshake.close()
-                },
-                function(uid, peer, channel)
-                {
-                    console.error(uid, peer, channel)
-                })
-            }
-            handshake.onerror = function()
-            {
-                if(!peersManager.numPeers())
-                {
-                    console.warn("You are not connected to any peer")
-                    alert("You are not connected to any peer")
-                }
-            }
-//            handshake.onopen = function()
-//            {
-//                // Restart downloads
-//                db.files_getAll(null, function(filelist)
-//                {
-//                    if(filelist.length)
-//                        policy(function()
-//                        {
-//                            for(var i=0, fileentry; fileentry=filelist[i]; i++)
-//                                if(fileentry.bitmap)
-//                                    peersManager.transfer_query(fileentry)
-//                        })
-//                })
-//            }
 
         peersManager.setHandshake(handshake)
+
+        handshake.onoffer = function(uid, sdp)
+        {
+            peersManager.onoffer(uid, sdp, function(uid, event)
+            {
+                console.error("Error creating DataChannel with peer "+uid);
+                console.error(event);
+            })
+        }
+        handshake.onanswer = function(uid, sdp)
+        {
+            peersManager.onanswer(uid, sdp, function(uid)
+            {
+                console.error("[handshake.answer] PeerConnection '" + uid +
+                              "' not found");
+            })
+        }
+        handshake.onsynapse = function(uid)
+        {
+            peersManager.connectTo(uid, function(channel)
+            {
+                handshake.pending_synapses--
+
+                if(handshake.pending_synapses == 0)
+                   handshake.close()
+            },
+            function(uid, peer, channel)
+            {
+                console.error(uid, peer, channel)
+            })
+        }
+        handshake.onerror = function()
+        {
+            if(!peersManager.numPeers())
+            {
+                console.warn("You are not connected to any peer")
+                alert("You are not connected to any peer")
+            }
+        }
+//        handshake.onopen = function()
+//        {
+//            // Restart downloads
+//            db.files_getAll(null, function(filelist)
+//            {
+//                if(filelist.length)
+//                    policy(function()
+//                    {
+//                        for(var i=0, fileentry; fileentry=filelist[i]; i++)
+//                            if(fileentry.bitmap)
+//                                peersManager.transfer_query(fileentry)
+//                    })
+//            })
+//        }
 
         // Init user interface
         var ui = new UI(db)
