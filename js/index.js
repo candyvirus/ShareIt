@@ -4,7 +4,7 @@ function load()
     DB_init(function(db)
     {
         // Init handshake manager
-        var handshake = new HandshakeManager('../../json/handshake_xRTML.json')
+        var handshake = new HandshakeManager('../../json/handshake.json')
 
         // Init PeersManager
         var peersManager = new PeersManager(db)
