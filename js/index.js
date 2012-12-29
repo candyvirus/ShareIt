@@ -31,10 +31,7 @@ function load()
         {
             peersManager.connectTo(uid, function(channel)
             {
-                handshake.pending_synapses--
-
-                if(handshake.pending_synapses == 0)
-                   handshake.close()
+                handshake.addConnection()
             },
             function(uid, peer, channel)
             {
@@ -43,6 +40,8 @@ function load()
         }
         handshake.onerror = function()
         {
+            // Couldn't be able to connect to a handshake server.
+            // If we are not connected to any peer yet, notify to the user
             if(!peersManager.numPeers())
             {
                 console.warn("You are not connected to any peer")

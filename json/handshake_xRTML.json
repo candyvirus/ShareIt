@@ -7,7 +7,7 @@
             "channels":  [{"name": "ShareIt"}],
             "url":       "http://developers2.realtime.livehtml.net/server/2.1",
 
-            "max_synapses" : 50
+            "max_connections": 100
         }
     ]
 ]
