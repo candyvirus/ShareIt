@@ -76,11 +76,15 @@ function load()
                 peersManager._send_file_deleted(fileentry)
             }
 
+        // Init cache backup system
+        var cacheBackup = new CacheBackup(db)
+
         // Init user interface
-        var ui = new UI(db)
+        var ui = new UI()
             ui.setHasher(hasher)
-            ui.setPeersManager(peersManager)
+            ui.setPeersManager(peersManager, db)
             ui.setHandshake(handshake)
+            ui.setCacheBackup(cacheBackup)
     })
 }
 
