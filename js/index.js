@@ -3,65 +3,8 @@ function load()
     // Init database
     DB_init(function(db)
     {
-        // Init handshake manager
-        var handshake = new HandshakeManager('../../json/handshake.json')
-
         // Init PeersManager
         var peersManager = new PeersManager(db)
-            peersManager.setHandshake(handshake)
-
-        // Config handshake manager
-        handshake.onoffer = function(uid, sdp)
-        {
-            peersManager.onoffer(uid, sdp, function(uid, event)
-            {
-                console.error("Error creating DataChannel with peer "+uid);
-                console.error(event);
-            })
-        }
-        handshake.onanswer = function(uid, sdp)
-        {
-            peersManager.onanswer(uid, sdp, function(uid)
-            {
-                console.error("[handshake.answer] PeerConnection '" + uid +
-                              "' not found");
-            })
-        }
-        handshake.onsynapse = function(uid)
-        {
-            peersManager.connectTo(uid, function(channel)
-            {
-                handshake.addConnection()
-            },
-            function(uid, peer, channel)
-            {
-                console.error(uid, peer, channel)
-            })
-        }
-        handshake.onerror = function()
-        {
-            // Couldn't be able to connect to a handshake server.
-            // If we are not connected to any peer yet, notify to the user
-            if(!peersManager.numPeers())
-            {
-                console.warn("You are not connected to any peer")
-                alert("You are not connected to any peer")
-            }
-        }
-//        handshake.onopen = function()
-//        {
-//            // Restart downloads
-//            db.files_getAll(null, function(filelist)
-//            {
-//                if(filelist.length)
-//                    policy(function()
-//                    {
-//                        for(var i=0, fileentry; fileentry=filelist[i]; i++)
-//                            if(fileentry.bitmap)
-//                                peersManager.transfer_query(fileentry)
-//                    })
-//            })
-//        }
 
         // Init hasher
         var hasher = new Hasher(db, policy)
@@ -76,6 +19,31 @@ function load()
                 peersManager._send_file_deleted(fileentry)
             }
 
+        // Init handshake manager
+        var handshakeManager = new HandshakeManager('../../json/handshake.json',
+                                                    peersManager)
+            handshakeManager.onerror = function(error)
+            {
+                console.error(error)
+                alert(error)
+            }
+//            handshake.onopen = function()
+//            {
+//                // Restart downloads
+//                db.files_getAll(null, function(filelist)
+//                {
+//                    if(filelist.length)
+//                        policy(function()
+//                        {
+//                            for(var i=0, fileentry; fileentry=filelist[i]; i++)
+//                                if(fileentry.bitmap)
+//                                    peersManager.transfer_query(fileentry)
+//                        })
+//                })
+//            }
+
+        peersManager.setHandshakeManager(handshakeManager)
+
         // Init cache backup system
         var cacheBackup = new CacheBackup(db)
 
@@ -83,7 +51,6 @@ function load()
         var ui = new UI()
             ui.setHasher(hasher)
             ui.setPeersManager(peersManager, db)
-            ui.setHandshake(handshake)
             ui.setCacheBackup(cacheBackup)
     })
 }
