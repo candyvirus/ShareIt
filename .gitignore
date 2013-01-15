@@ -1,8 +1,7 @@
-/shareit.webapp
 /daemon
 /doc
 /html_basic
-/test images
+/test_images
 /COLLABORATE.md
 /deploy.sh
 /README.md
