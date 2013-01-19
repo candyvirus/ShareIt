@@ -34,6 +34,8 @@
 
         <!-- Utilities libraries -->
 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dropbox.js/0.8.0/dropbox.min.js"></script>
+
         <script type="text/javascript" src="https://raw.github.com/piranna/BoolArray.js/master/BoolArray.js"></script>
         <script type="text/javascript" src="https://raw.github.com/piranna/DataChannel-polyfill/master/datachannel.js"></script>
         <script type="text/javascript" src="https://raw.github.com/piranna/EventTarget.js/master/EventTarget.js"></script>
@@ -121,7 +123,7 @@
                 <br/>
                 <span>
                     <label for="UID">UID:</label>
-                    <input id="UID-home" readonly size="40" style="font-size: 13px"/>
+                    <input id="UID-home" value="Connecting..." readonly size="40"/>
                 </span>
                 </p>
                 <br/>
@@ -274,7 +276,7 @@
             </p>
             <span>
                 <label for="UID">UID:</label>
-                <input id="UID-about" readonly size="40"/>
+                <input id="UID-about" value="Connecting..." readonly size="40"/>
             </span>
             <br/>
             Based on
