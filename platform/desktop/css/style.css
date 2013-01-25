@@ -20,17 +20,19 @@ html, body { height: 100%; }
 #Downloading {
     cursor: pointer;
     cellspacing: 0;
+    display: none;
     summary: ""
 }
 
 #Sharing {
     cursor: pointer;
     cellspacing: 0;
+    display: none;
     summary: ""
 }
 
 span.add-sharedpoint {
-  background-image: url(../../../images/add-folder.png);
+  background-image: url(../images/add-folder.png);
   background-position: center left;
   background-repeat: no-repeat;
   padding: .2em 0 .2em 1.5em;
@@ -118,6 +120,11 @@ span.about {
 }
 
 
+#dialog-about
+{
+    display: none;
+}
+
 #dialog-about #logo {
     float: right;
     height: 120px
@@ -132,7 +139,14 @@ span.about {
     margin-top: 12px;
 }
 
-#dialog-config {
+#dialog-compatibility
+{
+    display: none;
+}
+
+#dialog-config
+{
+    display: none;
     padding: 0;
 }
 
@@ -147,4 +161,10 @@ span.about {
     right: 0; 
     border-radius: 0px 8px 8px 0px;
     box-shadow: 3px 3px 3px #666;
+}
+
+#dialog-policy
+{
+    display: none
+}
 }

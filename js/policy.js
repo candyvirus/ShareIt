@@ -62,7 +62,7 @@ function policy(onaccept, oncancel)
     else
     {
         var http_request = new XMLHttpRequest();
-            http_request.open("GET", "../../policy.html", true);
+            http_request.open("GET", "policy.html");
             http_request.onload = function()
             {
                 // Policy text loaded successfully, fill the dialog and check it
