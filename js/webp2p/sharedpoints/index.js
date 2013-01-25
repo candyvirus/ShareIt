@@ -1,5 +1,18 @@
-function SharedpointsManager(db, hasher)
+function SharedpointsManager(db, peersManager)
 {
+    // Init hasher
+    var hasher = new Hasher(db, policy)
+        hasher.onhashed  = function(fileentry)
+        {
+            // Notify the other peers about the new hashed file
+            peersManager._send_file_added(fileentry)
+        }
+        hasher.ondeleted = function(fileentry)
+        {
+            // Notify the other peers about the deleted file
+            peersManager._send_file_deleted(fileentry)
+        }
+
     this.getSharedpoints = function(onsuccess)
     {
         db.sharepoints_getAll(null, onsuccess)
@@ -46,5 +59,10 @@ function SharedpointsManager(db, hasher)
           if(onsuccess)
               onsuccess()
       })
+    }
+
+    this.delete = function(name, onsuccess)
+    {
+        db.sharepoints_delete(name, onsuccess)
     }
 }

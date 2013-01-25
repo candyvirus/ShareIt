@@ -6,19 +6,6 @@ function load()
         // Init PeersManager
         var peersManager = new PeersManager(db)
 
-        // Init hasher
-        var hasher = new Hasher(db, policy)
-            hasher.onhashed  = function(fileentry)
-            {
-                // Notify the other peers about the new hashed file
-                peersManager._send_file_added(fileentry)
-            }
-            hasher.ondeleted = function(fileentry)
-            {
-                // Notify the other peers about the deleted file
-                peersManager._send_file_deleted(fileentry)
-            }
-
         // Init handshake manager
         var handshakeManager = new HandshakeManager('../../json/handshake.json',
                                                     peersManager)
@@ -48,13 +35,11 @@ function load()
         var cacheBackup = new CacheBackup(db, peersManager)
 
         // Init sharedpoints manager
-        var sharedpointsManager = new SharedpointsManager(db, hasher)
+        var sharedpointsManager = new SharedpointsManager(db, peersManager)
 
         // Init user interface
-        var ui = new UI()
-            ui.setCacheBackup(cacheBackup)
-            ui.setPeersManager(peersManager, db)
-            ui.setSharedpointsManager(sharedpointsManager)
+        var ui = new UI(cacheBackup, sharedpointsManager)
+            ui.setPeersManager(peersManager)
     })
 }
 
