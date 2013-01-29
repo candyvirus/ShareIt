@@ -41,14 +41,6 @@ html, body { height: 100%; }
     summary: ""
 }
 
-span.add-sharedpoint {
-  background-image: url(../../../images/add-folder.png);
-  background-position: center left;
-  background-repeat: no-repeat;
-  padding: .2em 0 .2em 1.5em;
-  cursor: pointer
-}
-
 
 /* Tools menu
  * ------------------------------------------------------------------------- */
@@ -79,18 +71,6 @@ span.add-sharedpoint {
 
 #tools-menu a {
   cursor: "pointer"
-}
-
-span.preferences {
-  background-image: url(../../../images/preferences.png);
-}
-
-span.user {
-  background-image: url(../../../images/user.png);
-}
-
-span.about {
-  background-image: url(../../../images/about.png);
 }
 
 
