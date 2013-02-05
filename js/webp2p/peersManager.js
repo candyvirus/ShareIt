@@ -375,26 +375,26 @@ function PeersManager(db, stun_server)
         var peer = peers[uid]
 
         // Peer is not connected, create a new channel
-        // [To-Do] Check if PeerConnection is connected but channel not created
-        if(!peer || !peer._channel)
+        if(!peer)
         {
             // Create PeerConnection
             peer = createPeerConnection(uid);
             peer.onopen = function()
             {
                 var channel = peer.createDataChannel('webp2p')
-                channel.onopen = function()
-                {
-                    initDataChannel(peer, channel, uid)
-
-                    if(onsuccess)
-                        onsuccess(channel)
-                }
                 channel.onerror = function()
                 {
-                    if(onerror)
-                        onerror(uid, peer, channel)
+                  if(onerror)
+                    onerror(uid, peer, channel)
                 }
+
+                channel.addEventListener('open', function(event)
+                {
+                  initDataChannel(peer, channel, uid)
+
+                  if(onsuccess)
+                     onsuccess(channel)
+                })
             }
             peer.onerror = function()
             {
@@ -427,7 +427,18 @@ function PeersManager(db, stun_server)
 
         // Peer is connected and we have defined an 'onsucess' callback
         else if(onsuccess)
+        {
+          // Channel is ready
+          if(peer._channel)
             onsuccess(peer._channel)
+
+          // Channel is not ready
+          else
+            channel.addEventListener('open', function(event)
+            {
+              onsuccess(channel)
+            })
+        }
     }
 
     /**
