@@ -226,62 +226,68 @@ function PeersManager(db, stun_server)
     }
 
 
-    /**
-     * Create a new RTCPeerConnection
-     * @param {UUID} id Identifier of the other peer so later can be accessed
-     * @returns {RTCPeerConnection}
-     */
-    function createPeerConnection(uid)
-	{
-	    var pc = peers[uid] = new RTCPeerConnection({"iceServers": [{"url": 'stun:'+stun_server}]});
-	        pc.onstatechange = function(event)
-	        {
-	            // Remove the peer from the list of peers when gets closed
-	            if(event.target.readyState == "closed")
-	                delete peers[uid]
-	        }
+  /**
+   * Create a new RTCPeerConnection
+   * @param {UUID} id Identifier of the other peer so later can be accessed
+   * @returns {RTCPeerConnection}
+   */
+  function createPeerConnection(uid)
+  {
+    var configuration = {iceServers: [{url: 'stun:'+stun_server}]}
+    var constraints = {optional: [{RtpDataChannels: true}]}
 
-	    return pc
-	}
-
-    /**
-     * Initialize a {RTCDataChannel}
-     * @param {RTCPeerConnection} pc PeerConnection owner of the DataChannel
-     * @param {RTCDataChannel} channel Communication channel with the other peer
-     */
-	function initDataChannel(pc, channel, uid)
-	{
-        channel.uid = uid
-
-        pc._channel = channel
-
-        Transport_init(channel)
-
-        Transport_Host_init(channel, db)
-        Transport_Peer_init(channel, db, self)
-        Transport_Routing_init(channel, self)
-        Transport_Search_init(channel, db, self)
-
-		channel.onclose = function()
-		{
-			delete pc._channel
-
-			pc.close()
-		}
-
-        self.addEventListener("file.added", function(event)
+    var pc = peers[uid] = new RTCPeerConnection(configuration, constraints);
+//        pc.onicecandidate = function(event)
+//        {
+//          if(event.candidate)
+//            socket.send(JSON.stringify(["peer.candidate", uid, event.candidate]));
+//        }
+        pc.onstatechange = function(event)
         {
-            var fileentry = event.data[0]
+          // Remove the peer from the list of peers when gets closed
+          if(event.target.readyState == "closed")
+	          delete peers[uid]
+	      }
 
-            channel._send_file_added(fileentry);
-        })
-        self.addEventListener("file.deleted", function(event)
-        {
-            var fileentry = event.data[0]
+    return pc
+  }
 
-            channel._send_file_deleted(fileentry);
-        })
+  /**
+   * Initialize a {RTCDataChannel}
+   * @param {RTCPeerConnection} pc PeerConnection owner of the DataChannel
+   * @param {RTCDataChannel} channel Communication channel with the other peer
+   */
+  function initDataChannel(pc, channel, uid)
+  {
+    channel.uid = uid
+
+    Transport_init(channel)
+
+    Transport_Host_init(channel, db)
+    Transport_Peer_init(channel, db, self)
+    Transport_Routing_init(channel, self)
+    Transport_Search_init(channel, db, self)
+
+    channel.onclose = function()
+    {
+      delete pc._channel
+
+      pc.close()
     }
+
+    self.addEventListener("file.added", function(event)
+    {
+      var fileentry = event.data[0]
+
+      channel._send_file_added(fileentry);
+    })
+    self.addEventListener("file.deleted", function(event)
+    {
+      var fileentry = event.data[0]
+
+      channel._send_file_deleted(fileentry);
+    })
+  }
 
 
     /**
@@ -371,74 +377,74 @@ function PeersManager(db, stun_server)
      */
     this.connectTo = function(uid, onsuccess, onerror, incomingChannel)
     {
-        // Search the peer between the list of currently connected peers
-        var peer = peers[uid]
+      // Search the peer between the list of currently connected peers
+      var peer = peers[uid]
 
-        // Peer is not connected, create a new channel
-        if(!peer)
+      // Peer is not connected, create a new channel
+      if(!peer)
+      {
+        // Create PeerConnection
+        peer = createPeerConnection(uid);
+        peer.onerror = function()
         {
-            // Create PeerConnection
-            peer = createPeerConnection(uid);
-            peer.onopen = function()
-            {
-                var channel = peer.createDataChannel('webp2p')
-                channel.onerror = function()
-                {
-                  if(onerror)
-                    onerror(uid, peer, channel)
-                }
-
-                channel.addEventListener('open', function(event)
-                {
-                  initDataChannel(peer, channel, uid)
-
-                  if(onsuccess)
-                     onsuccess(channel)
-                })
-            }
-            peer.onerror = function()
-            {
-                if(onerror)
-                    onerror(uid, peer)
-            }
-
-            // Send offer to new PeerConnection
-            peer.createOffer(function(offer)
-            {
-                // Send the offer only for the incoming channel
-                if(incomingChannel)
-                    incomingChannel.sendOffer(uid, offer.sdp)
-
-                // Send the offer throught all the peers
-                else
-                {
-                    var channels = self.getChannels()
-
-                    // Send the connection offer to the other connected peers
-                    for(var channel_id in channels)
-                        channels[channel_id].sendOffer(uid, offer.sdp)
-                }
-
-                // Set the peer local description
-                peer.setLocalDescription(new RTCSessionDescription({sdp: offer.sdp,
-                                                                    type: 'offer'}))
-            });
+          if(onerror)
+            onerror(uid, peer)
         }
 
-        // Peer is connected and we have defined an 'onsucess' callback
-        else if(onsuccess)
-        {
-          // Channel is ready
-          if(peer._channel)
-            onsuccess(peer._channel)
+        // Create DataChannel on the new PeerConnection
+        peer._channel = peer.createDataChannel('webp2p', {reliable: false})
 
-          // Channel is not ready
+        initDataChannel(peer, peer._channel, uid)
+
+        if(onsuccess)
+          peer._channel.addEventListener('open', function(event)
+          {
+            onsuccess(event.target)
+          })
+
+        if(onerror)
+          peer._channel.onerror = function(event)
+          {
+            onerror(uid, peer, event.target)
+          }
+
+        // Send offer to new PeerConnection
+        peer.createOffer(function(offer)
+        {
+          // Send the offer only for the incoming channel
+          if(incomingChannel)
+             incomingChannel.sendOffer(uid, offer.sdp)
+
+          // Send the offer throught all the peers
           else
-            channel.addEventListener('open', function(event)
-            {
-              onsuccess(channel)
-            })
-        }
+          {
+            var channels = self.getChannels()
+
+            // Send the connection offer to the other connected peers
+            for(var channel_id in channels)
+              channels[channel_id].sendOffer(uid, offer.sdp)
+          }
+
+          // Set the peer local description
+          peer.setLocalDescription(new RTCSessionDescription({sdp: offer.sdp,
+                                                              type: 'offer'}))
+        });
+      }
+
+      // Peer is connected and we have defined an 'onsucess' callback
+      else if(onsuccess)
+      {
+        // Channel is ready
+        if(peer._channel.readyState == 'open')
+          onsuccess(peer._channel)
+
+        // Channel is not ready, call the callback when it's opened
+        else
+          peer._channel.addEventListener('open', function(event)
+          {
+            onsuccess(event.target)
+          })
+      }
     }
 
     /**
