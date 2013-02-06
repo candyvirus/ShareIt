@@ -275,6 +275,12 @@ function PeersManager(db, stun_server)
   function initDataChannel(pc, channel, uid)
   {
     channel.uid = uid
+    channel.onclose = function()
+    {
+      delete channels[uid]
+
+      pc.close()
+    }
 
     Transport_init(channel)
 
@@ -282,13 +288,6 @@ function PeersManager(db, stun_server)
     Transport_Peer_init(channel, db, self)
     Transport_Routing_init(channel, self)
     Transport_Search_init(channel, db, self)
-
-    channel.onclose = function()
-    {
-      delete channels[uid]
-
-      pc.close()
-    }
 
     self.addEventListener("file.added", function(event)
     {
@@ -355,6 +354,33 @@ function PeersManager(db, stun_server)
                                                              type: 'answer'}))
       else if(onerror)
         onerror(uid)
+    }
+
+    this.oncandidate = function(uid, candidate)
+    {
+        // Search the peer between the list of currently connected peers
+        var peer = peers[uid]
+
+        // Peer is not connected, create a new channel
+        if(!peer)
+        {
+            peer = createPeerConnection(uid)
+            peer.ondatachannel = function(event)
+            {
+                console.log("Created datachannel with peer "+uid)
+                initDataChannel(peer, event.channel, uid)
+            }
+            peer.onerror = function(event)
+            {
+                if(onerror)
+                    onerror(uid, event)
+            }
+        }
+
+        // Process offer
+        peer.addIceCandidate(new RTCIceCandidate(candidate));
+
+        return peer
     }
 
     // Init handshake manager

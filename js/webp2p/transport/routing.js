@@ -39,6 +39,18 @@ function Transport_Routing_init(transport, peersManager)
         transport.emit('answer', orig, sdp, route);
     }
 
+    transport.sendCandidate = function(dest, candidate, route)
+    {
+      if(route == undefined)
+        route = []
+
+      if(transport.isPubsub)
+        route.push(peersManager.uid)
+
+      console.debug('send candidate', dest, route)
+      transport.emit('candidate', dest, candidate, route);
+    }
+
     /**
      * Receive and process an 'offer' message
      */
@@ -156,6 +168,60 @@ function Transport_Routing_init(transport, peersManager)
               for(var uid in channels)
                   if(uid != transport.uid)
                       channels[uid].sendAnswer(orig, sdp, route)
+        }
+    })
+
+    transport.addEventListener('candidate', function(event)
+    {
+        var dest      = event.data[0]
+        var candidate = event.data[1]
+        var route     = event.data[2]
+
+        // If a message have been already routed by this peer, ignore it
+        for(var i=0, uid; uid=route[i]; i++)
+            if(uid == peersManager.uid)
+                return
+
+        // Candidate is for us
+        if(dest == peersManager.uid)
+            // Create PeerConnection
+            peersManager.oncandidate(route[0], candidate, function(uid, event)
+            {
+                console.error("Error creating DataChannel with peer "+uid);
+                console.error(event);
+            })
+
+        // Candidate is not for us, route it over the other connected peers
+        else
+        {
+            // Add the transport where it was received to the route path
+            route.push(transport.uid)
+
+            // Search the peer between the list of currently connected peers
+            var channels = peersManager.getChannels()
+            var channel = channels[dest]
+
+            // Requested peer is one of the connected, notify directly to it
+            if(channel)
+                channel.sendCandidate(dest, candidate, route)
+
+            // Requested peer is not one of the directly connected, broadcast it
+            else
+                for(var uid in channels)
+                {
+                    // Ignore peers already on the route path
+                    var routed = false
+                    for(var i=0, peer; peer=route[i]; i++)
+                        if(peer == uid)
+                        {
+                            routed = true
+                            break
+                        }
+
+                    // Notify the offer request to the other connected peers
+                    if(!routed)
+                        channels[uid].sendCandidate(dest, candidate, route)
+                }
         }
     })
 }
