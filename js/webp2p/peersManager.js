@@ -18,6 +18,7 @@ function PeersManager(db, stun_server)
     EventTarget.call(this)
 
     var peers = {}
+    var channels = {}
 
     var self = this
 
@@ -231,17 +232,31 @@ function PeersManager(db, stun_server)
    * @param {UUID} id Identifier of the other peer so later can be accessed
    * @returns {RTCPeerConnection}
    */
-  function createPeerConnection(uid)
+  function createPeerConnection(uid, incomingChannel)
   {
     var configuration = {iceServers: [{url: 'stun:'+stun_server}]}
     var constraints = {optional: [{RtpDataChannels: true}]}
 
     var pc = peers[uid] = new RTCPeerConnection(configuration, constraints);
-//        pc.onicecandidate = function(event)
-//        {
-//          if(event.candidate)
-//            socket.send(JSON.stringify(["peer.candidate", uid, event.candidate]));
-//        }
+        pc.onicecandidate = function(event)
+        {
+          if(!event.candidate)
+            return
+
+          // Send the offer only for the incoming channel
+          if(incomingChannel)
+             incomingChannel.sendCandidate(uid, event.candidate)
+
+          // Send the offer throught all the peers
+          else
+          {
+            var channels = self.getChannels()
+
+            // Send the connection offer to the other connected peers
+            for(var channel_id in channels)
+              channels[channel_id].sendCandidate(uid, event.candidate)
+          }
+        }
         pc.onstatechange = function(event)
         {
           // Remove the peer from the list of peers when gets closed
@@ -270,7 +285,7 @@ function PeersManager(db, stun_server)
 
     channel.onclose = function()
     {
-      delete pc._channel
+      delete channels[uid]
 
       pc.close()
     }
@@ -333,23 +348,23 @@ function PeersManager(db, stun_server)
      */
     this.onanswer = function(uid, sdp, onerror)
     {
-        // Search the peer on the list of currently connected peers
-        var peer = peers[uid]
-        if(peer)
-            peer.setRemoteDescription(new RTCSessionDescription({sdp:  sdp,
-                                                               type: 'answer'}))
-        else if(onerror)
-            onerror(uid)
+      // Search the peer on the list of currently connected peers
+      var peer = peers[uid]
+      if(peer)
+        peer.setRemoteDescription(new RTCSessionDescription({sdp:  sdp,
+                                                             type: 'answer'}))
+      else if(onerror)
+        onerror(uid)
     }
 
     // Init handshake manager
     var handshakeManager = new HandshakeManager('json/handshake.json', this)
-        handshakeManager.onerror = function(error)
+        handshakeManager.onerror = function(event)
         {
-            console.error(error)
-            alert(error)
+          console.error(event)
+          alert(event)
         }
-        handshakeManager.onopen = function()
+        handshakeManager.onopen = function(event)
         {
             self.dispatchEvent({type: "uid", data: [self.uid]})
 
@@ -378,32 +393,33 @@ function PeersManager(db, stun_server)
     this.connectTo = function(uid, onsuccess, onerror, incomingChannel)
     {
       // Search the peer between the list of currently connected peers
-      var peer = peers[uid]
+      var channel = channels[uid]
 
       // Peer is not connected, create a new channel
-      if(!peer)
+      if(!channel)
       {
         // Create PeerConnection
-        peer = createPeerConnection(uid);
-        peer.onerror = function()
-        {
-          if(onerror)
-            onerror(uid, peer)
-        }
+        var peer = createPeerConnection(uid, incomingChannel);
+            peer.onerror = function()
+            {
+              if(onerror)
+                onerror(uid, peer)
+            }
 
         // Create DataChannel on the new PeerConnection
-        peer._channel = peer.createDataChannel('webp2p', {reliable: false})
+        channel = peer.createDataChannel('webp2p', {reliable: false})
+        channels[uid] = channel
 
-        initDataChannel(peer, peer._channel, uid)
+        initDataChannel(peer, channel, uid)
 
         if(onsuccess)
-          peer._channel.addEventListener('open', function(event)
+          channel.addEventListener('open', function(event)
           {
             onsuccess(event.target)
           })
 
         if(onerror)
-          peer._channel.onerror = function(event)
+          channel.onerror = function(event)
           {
             onerror(uid, peer, event.target)
           }
@@ -435,12 +451,12 @@ function PeersManager(db, stun_server)
       else if(onsuccess)
       {
         // Channel is ready
-        if(peer._channel.readyState == 'open')
-          onsuccess(peer._channel)
+        if(channel.readyState == 'open')
+          onsuccess(channel)
 
         // Channel is not ready, call the callback when it's opened
         else
-          peer._channel.addEventListener('open', function(event)
+          channel.addEventListener('open', function(event)
           {
             onsuccess(event.target)
           })
@@ -452,30 +468,28 @@ function PeersManager(db, stun_server)
      */
     this.getChannels = function()
     {
-        var channels = {}
+      var result = {}
 
-        // Peers channels
-        for(var uid in peers)
-        {
-            var channel = peers[uid]._channel
-            if(channel)
-                channels[uid] = channel
-        }
+      // Peers channels
+      for(var uid in channels)
+        if(channels.readyState == 'open')
+          result[uid] = channels[uid]
 
-        // Handshake servers channels
-        var handshakeChannels = handshakeManager.getChannels()
-        for(var uid in handshakeChannels)
-            if(handshakeChannels.hasOwnProperty(uid))
-                channels[uid] = handshakeChannels[uid]
+      // Handshake servers channels
+      var handshakeChannels = handshakeManager.getChannels()
 
-        return channels
+      for(var uid in handshakeChannels)
+        if(handshakeChannels.hasOwnProperty(uid))
+          result[uid] = handshakeChannels[uid]
+
+      return result
     }
 
 
     this.handshakeDisconnected = function()
     {
-        if(!this.numPeers())
-            this.dispatchEvent({type: "error.noPeers"})
+      if(!this.numPeers())
+        this.dispatchEvent({type: "error.noPeers"})
     }
 
 
@@ -485,7 +499,7 @@ function PeersManager(db, stun_server)
      */
     this.numPeers = function()
     {
-        return Object.keys(peers).length
+        return Object.keys(channels).length
     }
 
 
