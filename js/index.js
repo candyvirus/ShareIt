@@ -34,7 +34,8 @@ window.addEventListener('DOMContentLoaded', function()
                                 " it can't work as a host.");
 
   // Check for IndexedDB support and if it store File objects
-  testIDBBlobSupport(function(supported) {
+  testIDBBlobSupport(function(supported)
+  {
     if(!supported)
     {
       cm.addWarning('IndexedDB', "Your browser doesn't support storing File " +

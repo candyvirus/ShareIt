@@ -4,9 +4,10 @@ function DialogConfig(dialogId, options, peersManager)
 
   var self = this;
 
-  var dialog = $('#' + dialogId);
+  var dialog = $('#'+dialogId);
 
-  if (!$.mobile) dialog.dialog(options);
+  if(!$.mobile)
+    dialog.dialog(options);
 
   dialog.tabs({
     active: 0
@@ -34,8 +35,10 @@ function DialogConfig(dialogId, options, peersManager)
 
 
   // Sharedpoints tab
+
   // Sharedpoints table
-  var tableSharedpoints = new TableSharedpoints('Sharedpoints', function(fileentry)
+  var tableSharedpoints = new TableSharedpoints('Sharedpoints',
+  function(fileentry)
   {
     return function()
     {
@@ -98,6 +101,7 @@ function DialogConfig(dialogId, options, peersManager)
 
 
   // Backup tab
+
   // Export
   dialog.find('#Export').click(function()
   {

@@ -1,29 +1,33 @@
-function No_FileReader() {
+function No_FileReader()
+{
   $('#Sharedpoints').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
 }
 
 
-function TableSharedpoints(tableId, onclickFactory) {
+function TableSharedpoints(tableId, onclickFactory)
+{
   var table = document.getElementById(tableId);
   this.tbody = table.getElementsByTagName('tbody')[0];
 
 
-  function noFilesCaption() {
+  function noFilesCaption()
+  {
     // Compose no files shared content (fail-back)
     var cell = spanedCell(table);
-    cell.appendChild(document.createTextNode('There are no shared points. '));
+        cell.appendChild(document.createTextNode('There are no shared points. '));
 
     var anchor = document.createElement('A');
-    anchor.style.cursor = 'pointer';
+        anchor.style.cursor = 'pointer';
     cell.appendChild(anchor);
 
-    $(anchor).click(function() {
+    $(anchor).click(function()
+    {
       $('#files').click();
     });
 
     var span = document.createElement('SPAN');
-    span.setAttribute('class', 'add-sharedpoint');
-    span.appendChild(document.createTextNode('Please add some folders'));
+        span.setAttribute('class', 'add-sharedpoint');
+        span.appendChild(document.createTextNode('Please add some folders'));
     anchor.appendChild(span);
 
     cell.appendChild(document.createTextNode(' to be shared.'));
@@ -33,7 +37,8 @@ function TableSharedpoints(tableId, onclickFactory) {
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFactory(fileentry) {
+  function rowFactory(fileentry)
+  {
     var tr = document.createElement('TR');
 
     var td = document.createElement('TD');
@@ -41,45 +46,52 @@ function TableSharedpoints(tableId, onclickFactory) {
 
     // Name & icon
     var span = document.createElement('SPAN');
-    span.className = fileentry.type;
-    span.appendChild(document.createTextNode(fileentry.name));
+        span.className = fileentry.type;
+        span.appendChild(document.createTextNode(fileentry.name));
     td.appendChild(span);
 
     // Shared size
     var td = document.createElement('TD');
-    td.className = 'filesize';
-    td.appendChild(document.createTextNode(humanize.filesize(fileentry.size)));
+        td.className = 'filesize';
+        td.appendChild(document.createTextNode(humanize.filesize(fileentry.size)));
     tr.appendChild(td);
 
     var td = document.createElement('TD');
-    td.class = 'end';
+        td.class = 'end';
     tr.appendChild(td);
 
     var a = document.createElement('A');
-    a.onclick = onclickFactory(fileentry);
-    a.appendChild(document.createTextNode('Delete'));
+        a.onclick = onclickFactory(fileentry);
+        a.appendChild(document.createTextNode('Delete'));
     td.appendChild(a);
 
     return tr;
   }
 
-  this.updateFiles = function(fileslist) {
-    for (var i = 0, fileentry; fileentry = fileslist[i]; i++) {
+  this.updateFiles = function(fileslist)
+  {
+    for(var i=0, fileentry; fileentry=fileslist[i]; i++)
+    {
       // Calc path
       var path = '';
-      if (fileentry.sharedpoint) path += fileentry.sharedpoint + '/';
-      if (fileentry.path) path += fileentry.path + '/';
+      if(fileentry.sharedpoint)
+        path += fileentry.sharedpoint + '/';
+      if(fileentry.path)
+        path += fileentry.path + '/';
 
       var name = '';
-      if (fileentry.file) name = fileentry.file.name;
-      else name = fileentry.name;
+      if(fileentry.file)
+        name = fileentry.file.name;
+      else
+        name = fileentry.name;
 
       var child = path.split('/').slice(0, -1).join('/').replace(' ', '');
 
       // Add file row
       var tr = rowFactory(fileentry);
-      //                    tr.id = path + name
-      if (child) tr.setAttribute('class', 'child-of-' + child);
+//        tr.id = path + name
+      if(child)
+        tr.setAttribute('class', 'child-of-' + child);
 
       this.tbody.appendChild(tr);
     }
