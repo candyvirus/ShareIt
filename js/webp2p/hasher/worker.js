@@ -56,7 +56,8 @@ function checkRemoved(fileentry)
   {
     self.postMessage(['delete', fileentry]);
   };
-  reader.onload = function() {
+  reader.onload = function()
+  {
     // [Hack] When (re)moving the file from its original place, Chrome
     // show it with size = 0 and lastModifiedDate = null instead of
     // raising a NotFoundError error
