@@ -85,7 +85,7 @@ var FilesTable =
 
         var result = strcmp(a.file ? a.file.name : a.name,
                             b.file ? b.file.name : b.name);
-        if(result) eturn result;
+        if(result) return result;
       });
 
       this.updateFiles(fileslist);
