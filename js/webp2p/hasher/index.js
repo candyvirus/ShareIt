@@ -3,7 +3,7 @@
  * @param {IDBDatabase} db ShareIt! database.
  * @param {?Function} policy Function to manage the policy access.
  */
-function Hasher(db, policy)
+function Hasher(db, policy, sharedpointsManager)
 {
   var queue = [];
   var timeout;
@@ -60,24 +60,24 @@ function Hasher(db, policy)
       });
     }
 
-//        // Dropbox plugin start
-//        if(dropboxClient
-//        && fileentry.sharedpoint == "Dropbox")
-//        {
-//            var options = {download: true, downloadHack: true}
+//    // Dropbox plugin start
+//    if(dropboxClient
+//    && fileentry.sharedpoint == "Dropbox")
+//    {
+//      var options = {download: true, downloadHack: true}
 //
-//            dropboxClient.makeUrl(fileentry.path+'/'+name, options,
-//            function(error, publicUrl)
-//            {
-//                if(publicUrl)
-//                    fileentry.dropbox = publicUrl.url
+//      dropboxClient.makeUrl(fileentry.path+'/'+name, options,
+//      function(error, publicUrl)
+//      {
+//        if(publicUrl)
+//          fileentry.dropbox = publicUrl.url
 //
-//                addFile(fileentry)
-//            })
-//        }
-//        else
-//        // Dropbox plugin end
-    addFile(fileentry);
+//        addFile(fileentry)
+//      })
+//    }
+//    else
+//    // Dropbox plugin end
+      addFile(fileentry);
   }
 
   var worker = new Worker('js/webp2p/hasher/worker.js');
@@ -124,7 +124,7 @@ function Hasher(db, policy)
         else if(sp == q)
           files.splice(i);
 
-      // Normal file, hash it
+        // Normal file, hash it
         else
           i++;
       }
@@ -203,6 +203,6 @@ function Hasher(db, policy)
     });
   };
 
-// Start hashing new files from the shared points on load
-//    self.refresh()
+  // Start hashing new files from the shared points on load
+//  self.refresh()
 }

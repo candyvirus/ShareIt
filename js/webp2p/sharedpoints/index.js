@@ -1,8 +1,7 @@
 function SharedpointsManager(db, peersManager)
 {
   // Init hasher
-  var hasher = new Hasher(db, policy);
-
+  var hasher = new Hasher(db, policy, this);
   hasher.onhashed = function(fileentry)
   {
     // Notify the other peers about the new hashed file
@@ -23,19 +22,18 @@ function SharedpointsManager(db, peersManager)
 //
 //    this.getSharedpoints(function(sharedpoints)
 //    {
-//        for(var i=0, sharedpoint; sharedpoint= sharedpoints[i]; i++)
+//      for(var i=0, sharedpoint; sharedpoint= sharedpoints[i]; i++)
+//      {
+//        switch(sharedpoint.type)
 //        {
-//            switch(sharedpoint.type)
-//            {
-//                case 'dropbox':
-//                    break
+//          case 'dropbox':
+//            break
 //
-//                case 'folder':
-//                    break
-//            }
+//          case 'folder':
+//            break
 //        }
+//      }
 //    })
-
   this.addSharedpoint_Folder = function(files, onsuccess, onerror)
   {
     var sharedpoint_name = files[0].webkitRelativePath.split('/')[0];
