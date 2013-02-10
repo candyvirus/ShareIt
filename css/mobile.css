@@ -1,0 +1,33 @@
+.only-desktop
+{
+    display: none;
+}
+
+.ui-li-static.ui-li.only-desktop
+{
+    display: none;
+}
+
+#Home #logo
+{
+    width: 100%
+}
+
+#dialog-about
+{
+    text-align: center
+}
+
+#dialog-about #logo
+{
+    width: 100%
+}
+
+#fork_me {
+    border: none;
+    position: fixed; 
+    bottom: 0; 
+    right: 0; 
+    border-radius: 0px 8px 8px 0px;
+    box-shadow: 3px 3px 3px #666;
+}

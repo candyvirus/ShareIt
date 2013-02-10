@@ -92,3 +92,19 @@ http://www.stunserver.org/
 === DuckGo ===
 http://duck.co/topic/duckduckgo-s-new-public-xmpp-jabber-service-on-dukgo-com
 dukgo.com
+
+=== Turtle Security ===
+https://www.tsec.pro
+
+=== LightWitch ===
+http://www.lightwitch.org/im-service
+
+=== iitsp ===
+http://jabber.iitsp.com
+
+=== Poezio ===
+http://poezio.eu/en/quick_guide.php
+anon.louiz.org
+
+== Using Multi User Chat to Push Messages ==
+http://chatmongers.com/blog/using-multi-user-chat-to-push-messages
