@@ -53,6 +53,10 @@ webp2p.load(
  'handshake/PubNub',
  'handshake/simpleSignaling',
 
+ 'lib/BoolArray',
+ 'lib/datachannel',
+ 'lib/EventTarget',
+
  'lib/zip.js/deflate',
  'lib/zip.js/inflate',
  'lib/zip.js/zip',

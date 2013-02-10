@@ -1,7 +1,5 @@
 function TabsMain(tabsId, peersManager, preferencesDialogOpen)
 {
-  EventTarget.call(this);
-
   var self = this;
 
   var tabs = $('#' + tabsId);
@@ -55,10 +53,7 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
     var type = event.data[0];
     var value = event.data[1];
 
-    tabDownloading.dispatchEvent({
-      type: type,
-      data: [value]
-    });
+    $(tabDownloading).trigger(type, [value]);
   });
   peersManager.addEventListener('transfer.end', tabDownloading_checkAndUpdate);
 
@@ -195,28 +190,20 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
       {
         var fileentry = event.data[0];
 
-        tabPeer.dispatchEvent({
-          type: fileentry.hash + '.begin'
-        });
+        $(tabPeer).trigger(fileentry.hash + '.begin');
       });
       peersManager.addEventListener('transfer.update', function(event)
       {
         var fileentry = event.data[0];
         var value = event.data[1];
 
-        tabPeer.dispatchEvent({
-          type: fileentry.hash + '.update',
-          data: [value]
-        });
+        $(tabPeer).trigger(fileentry.hash + '.update', [value]);
       });
       peersManager.addEventListener('transfer.end', function(event)
       {
         var fileentry = event.data[0];
 
-        tabPeer.dispatchEvent(
-        {
-          type: fileentry.hash + '.end'
-        });
+        $(tabPeer).trigger(fileentry.hash + '.end');
       });
 
       // Get notified when this channel files list is updated
@@ -230,12 +217,10 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
 
       // Request the peer's files list
       var SEND_UPDATES = 1;
-//            var SMALL_FILES_ACCELERATOR = 2
-
+//      var SMALL_FILES_ACCELERATOR = 2
       var flags = SEND_UPDATES;
-//            if()
-//                flags |= SMALL_FILES_ACCELERATOR
-
+//      if()
+//        flags |= SMALL_FILES_ACCELERATOR
       channel.fileslist_query(flags);
     }
   };

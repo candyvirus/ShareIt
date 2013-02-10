@@ -1,7 +1,5 @@
 function TabDownloading(tableId, preferencesDialogOpen)
 {
-  EventTarget.call(this);
-
   var self = this;
 
   var table = document.getElementById(tableId);
@@ -67,10 +65,8 @@ function TabDownloading(tableId, preferencesDialogOpen)
     var td_progress = document.createElement('TD');
         td_progress.appendChild(document.createTextNode('0%'));
 
-    self.addEventListener(fileentry.hash, function(event)
+    $(self).on(fileentry.hash, function(event, value)
     {
-      var value = event.data[0];
-
       var progress = document.createTextNode(Math.floor(value * 100) + '%');
 
       while(td_progress.firstChild)
@@ -131,7 +127,7 @@ function TabDownloading(tableId, preferencesDialogOpen)
 
       // Add file row
       var tr = rowFactory(fileentry);
-//        tr.id = path + name
+//          tr.id = path + name
       if(child)
         tr.setAttribute('class', 'child-of-' + child);
 
