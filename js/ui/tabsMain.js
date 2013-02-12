@@ -35,10 +35,12 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
   function tabDownloading_checkAndUpdate()
   {
     // Only update the sharing tab if it's active
-    if (tabs.tabs('option', 'active') != 0)
+    if(tabs.tabs('option', 'active') != 0)
     {
       tabs.tabs('enable', 0);
       tabs.tabs('option', 'collapsible', false);
+
+      tabDownloading.dirty = true
       return;
     }
 
@@ -73,11 +75,15 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
     }, tabSharing.tbody);
   }
 
-  function tabSharing_checkAndUpdate() {
+  function tabSharing_checkAndUpdate()
+  {
     // Only update the sharing tab if it's active
-    if (tabs.tabs('option', 'active') != 1) {
+    if(tabs.tabs('option', 'active') != 1)
+    {
       tabs.tabs('enable', 1);
       tabs.tabs('option', 'collapsible', false);
+
+      tabSharing.dirty = true
       return;
     }
 
@@ -92,7 +98,6 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
 
   function tabsbeforeactivate(event, ui)
   {
-  alert("tabsbeforeactivate live");
     var newPanel = ui.newPanel || ui.nextPage
         newPanel = newPanel['0']
 
