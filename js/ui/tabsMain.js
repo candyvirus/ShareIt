@@ -137,45 +137,53 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
       var li = document.createElement('LI');
 
       var a = document.createElement('A');
-      a.href = tabPanelId;
-      a.appendChild(document.createTextNode('UID: ' + uid));
+          a.href = tabPanelId;
+          a.appendChild(document.createTextNode('UID: ' + uid));
       li.appendChild(a);
 
       var span = document.createElement('SPAN');
-      span.setAttribute('class', 'ui-icon ui-icon-closethick');
-      span.appendChild(document.createTextNode('Remove Tab'));
-      span.onclick = function()
-      {
-        channel.fileslist_disableUpdates();
+          span.setAttribute('class', 'ui-icon ui-icon-closethick');
+          span.appendChild(document.createTextNode('Remove Tab'));
+          span.onclick = function()
+          {
+            channel.fileslist_disableUpdates();
 
-        // Remove the tab
-        var index = $('#ui-corner-top', tabs).index($(this).parent());
-        tabs.find('.ui-tabs-nav li:eq(' + index + ')').remove();
+            // Remove the tab
+            var index = $('#ui-corner-top', tabs).index($(this).parent());
+            tabs.find('.ui-tabs-nav li:eq(' + index + ')').remove();
 
-        // Remove the panel
-        $(tabPanelId).remove();
+            // Remove the panel
+            $(tabPanelId).remove();
 
-        // If there are no more peer/search tabs, check if we are
-        // sharing or downloading a file and if not, show again the
-        // Home screen
-        var disabled = $('#' + tabsId).tabs('option', 'disabled');
-        //                    if(!index && disabled.length == 2)
-        if (disabled.length == 2) {
-          $('#' + tabsId).tabs('option', 'collapsible', true);
-          $('#Home-tab').appendTo('#' + tabsId);
-        }
+            // If there are no more peer/search tabs, check if we are sharing or
+            // downloading a file and if not, show again the Home screen
+            var disabled = $('#' + tabsId).tabs('option', 'disabled');
+//            if(!index && disabled.length == 2)
+            if(disabled.length == 2)
+            {
+              $('#' + tabsId).tabs('option', 'collapsible', true);
+              $('#Home-tab').appendTo('#' + tabsId);
+            }
 
-        // Refresh the tabs widget
-        tabs.tabs('refresh');
-      };
+            // Refresh the tabs widget
+            if(!$.mobile)
+              tabs.tabs('refresh');
+          };
       li.appendChild(span);
 
       $(li).appendTo('#' + tabsId + ' .ui-tabs-nav');
 
       // Tab panel
-      var tabPeer = new TabPeer(uid, tabsId, preferencesDialogOpen, function(fileentry) {
-        return function() {
-          policy(function() {
+      if($.mobile)
+        $('#Home ul').listview('refresh');
+
+      var tabPeer = new TabPeer(uid, tabsId, preferencesDialogOpen,
+      function(fileentry)
+      {
+        return function()
+        {
+          policy(function()
+          {
             // Begin transfer of file
             peersManager._transferbegin(fileentry);
 
