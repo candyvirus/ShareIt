@@ -86,36 +86,48 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
 
   peersManager.addEventListener('transfer.end', tabSharing_checkAndUpdate);
 
-  peersManager.addEventListener('file.added', tabSharing_checkAndUpdate);
+  peersManager.addEventListener('file.added',   tabSharing_checkAndUpdate);
   peersManager.addEventListener('file.deleted', tabSharing_checkAndUpdate);
 
 
-  tabs.on('tabsbeforeactivate', function(event, ui) {
-    var newPanel = ui.newPanel['0'];
+  function tabsbeforeactivate(event, ui)
+  {
+  alert("tabsbeforeactivate live");
+    var newPanel = ui.newPanel || ui.nextPage
+        newPanel = newPanel['0']
 
-    if (newPanel) switch (newPanel.id) {
-      case 'Downloading':
-        if (tabDownloading.dirty) tabDownloading_update();
-        break;
+    if(newPanel)
+      switch(newPanel.id)
+      {
+        case 'Downloading':
+          if(tabDownloading.dirty)
+             tabDownloading_update();
+          break;
 
-      case 'Sharing':
-        if (tabSharing.dirty) tabSharing_update();
-        break;
-    }
-  });
+        case 'Sharing':
+          if(tabSharing.dirty)
+             tabSharing_update();
+          break;
+      }
+  };
+  tabs.on('tabsbeforeactivate', tabsbeforeactivate)
+  $(document).live('pagebeforehide', tabsbeforeactivate)
 
   // Peers tabs
-  this.openOrCreatePeer = function(uid, preferencesDialogOpen, peersManager, channel) {
+  this.openOrCreatePeer = function(uid, preferencesDialogOpen, peersManager, channel)
+  {
     var tabPanelId = '#' + tabsId + '-' + uid;
 
     // Get index of the peer tab
     var index = tabs.find('table').index($(tabPanelId));
 
     // Peer tab exists, open it
-    if (index != -1) tabs.tabs('option', 'active', index);
+    if(index != -1)
+      tabs.tabs('option', 'active', index);
 
     // Peer tab don't exists, create it
-    else {
+    else
+    {
       // Tab
       var li = document.createElement('LI');
 
@@ -127,7 +139,8 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
       var span = document.createElement('SPAN');
       span.setAttribute('class', 'ui-icon ui-icon-closethick');
       span.appendChild(document.createTextNode('Remove Tab'));
-      span.onclick = function() {
+      span.onclick = function()
+      {
         channel.fileslist_disableUpdates();
 
         // Remove the tab
