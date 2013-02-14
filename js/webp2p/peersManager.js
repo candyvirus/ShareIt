@@ -493,7 +493,7 @@ function PeersManager(db, stun_server)
       {
         // Send the offer only for the incoming channel
         if(incomingChannel)
-          incomingChannel.sendOffer(uid, offer.sdp);
+           incomingChannel.sendOffer(uid, offer.sdp);
 
         // Send the offer throught all the peers
         else
@@ -506,7 +506,8 @@ function PeersManager(db, stun_server)
         }
 
         // Set the peer local description
-        peer.setLocalDescription(new RTCSessionDescription({
+        peer.setLocalDescription(new RTCSessionDescription(
+        {
           sdp: offer.sdp,
           type: 'offer'
         }));
@@ -576,16 +577,16 @@ function PeersManager(db, stun_server)
   {
     db.files_getAll(null, function(filelist)
     {
-      var downloading = []
+      var downloading = [];
 
-      for(var i=0, fileentry; fileentry=filelist[i]; i++)
+      for(var i = 0, fileentry; fileentry = filelist[i]; i++)
         if(fileentry.bitmap)
-          downloading.push(fileentry)
+          downloading.push(fileentry);
 
-      // Update Downloading files list
-      onsuccess(downloading)
-    })
-  }
+        // Update Downloading files list
+        onsuccess(downloading);
+    });
+  };
 
   this.files_sharing = function(onsuccess)
   {

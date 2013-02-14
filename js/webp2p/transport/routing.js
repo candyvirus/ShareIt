@@ -9,7 +9,7 @@ function Transport_Routing_init(transport, peersManager)
   transport.sendOffer = function(dest, sdp, route)
   {
     if(route == undefined)
-      route = [];
+       route = [];
 
     if(transport.isPubsub)
       route.push(peersManager.uid);
@@ -100,7 +100,7 @@ function Transport_Routing_init(transport, peersManager)
 
       // Requested peer is one of the connected, notify directly to it
       if(channel)
-        channel.sendOffer(dest, sdp, route);
+         channel.sendOffer(dest, sdp, route);
 
       // Requested peer is not one of the directly connected, broadcast it
       else
@@ -131,8 +131,9 @@ function Transport_Routing_init(transport, peersManager)
     var sdp = event.data[1];
     var route = event.data[2];
 
-    // Answer is from ourselves, ignore it
-    if(orig == peersManager.uid)
+    // Answer is from ourselves or we don't know where it goes, ignore it
+    if(orig == peersManager.uid
+    || !route.length)
       return;
 
     // Answer is for us
@@ -142,8 +143,9 @@ function Transport_Routing_init(transport, peersManager)
         console.error("[routing.answer] PeerConnection '" + uid + "' not found");
       });
 
-    // Answer is not for us, search peers on route where we could send it
-    else
+    // Answer is not for us but we know where it goes, search peers on route
+    // where we could send it
+    else if(route.length > 1)
     {
       var routed = false;
 
@@ -157,15 +159,15 @@ function Transport_Routing_init(transport, peersManager)
         {
           channel.sendAnswer(orig, sdp, route.slice(0, i - 1));
 
-          // Currently is sending the message to all the shortcuts,
-          // but maybe it would be necessary only the first one so
-          // some band-width could be saved?
+          // Currently is sending the message to all the shortcuts, but maybe it
+          // would be necessary only the first one so some band-width could be
+          // saved?
           routed = true;
         }
       }
 
-      // Answer couldn't be routed (maybe a peer was disconnected?),
-      // try to find the connection request initiator peer by broadcast
+      // Answer couldn't be routed (maybe a peer was disconnected?), try to find
+      // the connection request initiator peer by broadcast
       if(!routed)
         for(var uid in channels)
           if(uid != transport.uid)
