@@ -187,7 +187,7 @@ function Hasher(db, policy, sharedpointsManager)
           {
             // Sharedpoint was removed, remove the file from database
             if(!sharedpoint_exist(fileentry.sharedpoint.name))
-              delete_fileentry(fileentry);
+              fileentry_delete(fileentry);
 
           // File is a real filesystem one, rehash it
             else if(fileentry.file)
