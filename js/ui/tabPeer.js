@@ -1,16 +1,37 @@
 function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 {
   // Tabs
-  var table = document.createElement('TABLE');
-  table.id = tabsId + '-' + uid;
-  $(table).appendTo('#' + tabsId);
+  var div = document.createElement('DIV');
+      div.id = tabsId + '-' + uid;
+      div.dataset.role = 'page'
+      div.setAttribute('data-add-back-btn', true);
+
+  $(div).appendTo('#' + tabsId);
 
   // Tab
-  if(!$.mobile)
+  if($.mobile)
+  {
+    var header = document.createElement('DIV');
+        header.dataset.role = 'header'
+        header.dataset.position = 'fixed'
+        header.setAttribute('class', 'only-mobile');
+
+    var h1 = document.createElement('H1');
+        h1.appendChild(document.createTextNode('UID: ' + uid));
+
+    $(h1).appendTo(header);
+
+    $(header).appendTo(div);
+  }
+  else
   {
     $('#tabs').tabs('refresh');
     $('#tabs').tabs('option', 'active', -1);
   }
+
+  // Table
+  var table = document.createElement('TABLE');
+  div.appendChild(table);
 
   // Tab panel
   var thead = document.createElement('THEAD');
