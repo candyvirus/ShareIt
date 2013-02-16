@@ -50,7 +50,7 @@ function CompatibilityManager()
       msg += "on your browser because it doesn't meet the following requeriments:</p>";
 
       msg += '<ul style="list-style: none;">';
-      for (var key in errors)
+      for(var key in errors)
         msg += '<li><b>' + key + '</b>: ' + errors[key] + '</li>';
       msg += '</ul>';
 
@@ -93,7 +93,7 @@ function CompatibilityManager()
           Ok: function()
           {
             $(this).remove();
-//          $(this).dialog("destroy");
+//            $(this).dialog("destroy");
           }
         }
       });
@@ -104,8 +104,10 @@ function CompatibilityManager()
     {
       // Prepare an object with the warnings and the errors to be inserted
       var newCompatibility = {};
-      if(errors) newCompatibility.errors = errors;
-      if(warnings) newCompatibility.warnings = warnings;
+      if(errors)
+        newCompatibility.errors = errors;
+      if(warnings)
+        newCompatibility.warnings = warnings;
       newCompatibility = JSON.stringify(newCompatibility);
 
       // Check if compatibility status has changed and notify to user

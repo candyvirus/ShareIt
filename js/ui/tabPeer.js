@@ -1,12 +1,39 @@
 function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 {
+  // Tabs
+  var div = document.createElement('DIV');
+      div.id = tabsId + '-' + uid;
+      div.dataset.role = 'page'
+      div.setAttribute('data-add-back-btn', true);
+
+  $(div).appendTo('#' + tabsId);
+
+  // Tab
+  if($.mobile)
+  {
+    var header = document.createElement('DIV');
+        header.dataset.role = 'header'
+        header.dataset.position = 'fixed'
+        header.setAttribute('class', 'only-mobile');
+
+    var h1 = document.createElement('H1');
+        h1.appendChild(document.createTextNode('UID: ' + uid));
+
+    $(h1).appendTo(header);
+
+    $(header).appendTo(div);
+  }
+  else
+  {
+    $('#tabs').tabs('refresh');
+    $('#tabs').tabs('option', 'active', -1);
+  }
+
+  // Table
   var table = document.createElement('TABLE');
-      table.id = tabsId + '-' + uid;
-  $(table).appendTo('#' + tabsId);
+  div.appendChild(table);
 
-  $('#tabs').tabs('refresh');
-  $('#tabs').tabs('option', 'active', -1);
-
+  // Tab panel
   var thead = document.createElement('THEAD');
   table.appendChild(thead);
 
@@ -73,7 +100,7 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     div.progressbar = function(value)
     {
       if(value == undefined)
-        value = 0;
+         value = 0;
 
       var progress = document.createTextNode(Math.floor(value * 100) + '%');
 
@@ -103,7 +130,7 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     {
       var chunks = fileentry.size / chunksize;
       if(chunks % 1 != 0)
-        chunks = Math.floor(chunks) + 1;
+         chunks = Math.floor(chunks) + 1;
 
       div.progressbar(fileentry.bitmap.indexes(true).length / chunks);
     }
@@ -134,18 +161,17 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     var captionCell = spanedCell(table);
     captionCell.appendChild(document.createTextNode('Remote peer is not sharing files.'));
 
-//        var anchor = document.createElement('A')
-//            anchor.id = 'ConnectUser'
-//            anchor.style.cursor = 'pointer'
-//        captionCell.appendChild(anchor)
+//    var anchor = document.createElement('A')
+//        anchor.id = 'ConnectUser'
+//        anchor.style.cursor = 'pointer'
+//    captionCell.appendChild(anchor)
 //
-//        $(anchor).click(preferencesDialogOpen)
+//    $(anchor).click(preferencesDialogOpen)
 //
-//        var span = document.createElement('SPAN')
-//            span.setAttribute("class", "user")
-//            span.appendChild(document.createTextNode("Connect to a user"))
-//        anchor.appendChild(span)
-
+//    var span = document.createElement('SPAN')
+//        span.setAttribute("class", "user")
+//        span.appendChild(document.createTextNode("Connect to a user"))
+//    anchor.appendChild(span)
     captionCell.appendChild(document.createTextNode(" Why don't ask him about doing it?"));
 
     return captionCell;

@@ -36,7 +36,7 @@ function policy(onaccept, oncancel)
           console.warn('Policy was NOT accepted');
 
           if(oncancel)
-            oncancel();
+             oncancel();
         },
         Accept: function()
         {
@@ -48,7 +48,7 @@ function policy(onaccept, oncancel)
           console.warn('Policy was accepted');
 
           if(onaccept)
-            onaccept();
+             onaccept();
         }
       }
     });

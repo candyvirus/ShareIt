@@ -70,6 +70,11 @@ function UI(peersManager)
      */
     function ConnectUser()
     {
+//      // Close the menu pop-up on the mobile platform
+//      if($.mobile)
+//        $('tools-menu-submenu').popup('close');
+
+      // Ask for the peer UID and connect to it
       var uid = prompt('UID to connect');
       if(uid != null && uid != '')
       {

@@ -41,6 +41,8 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
     {
       tabs.tabs('enable', 0);
       tabs.tabs('option', 'collapsible', false);
+
+      tabDownloading.dirty = true
       return;
     }
 
@@ -82,6 +84,8 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
     {
       tabs.tabs('enable', 1);
       tabs.tabs('option', 'collapsible', false);
+
+      tabSharing.dirty = true
       return;
     }
 
@@ -90,28 +94,31 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
 
   peersManager.addEventListener('transfer.end', tabSharing_checkAndUpdate);
 
-  peersManager.addEventListener('file.added', tabSharing_checkAndUpdate);
+  peersManager.addEventListener('file.added',   tabSharing_checkAndUpdate);
   peersManager.addEventListener('file.deleted', tabSharing_checkAndUpdate);
 
 
-  tabs.on('tabsbeforeactivate', function(event, ui)
+  function tabsbeforeactivate(event, ui)
   {
-    var newPanel = ui.newPanel['0'];
+    var newPanel = ui.newPanel || ui.nextPage
+        newPanel = newPanel['0']
 
     if(newPanel)
       switch(newPanel.id)
       {
         case 'Downloading':
           if(tabDownloading.dirty)
-            tabDownloading_update();
+             tabDownloading_update();
         break;
 
         case 'Sharing':
           if(tabSharing.dirty)
-            tabSharing_update();
-        break;
-    }
-  });
+             tabSharing_update();
+          break;
+      }
+  };
+  tabs.on('tabsbeforeactivate', tabsbeforeactivate)
+  $(document).live('pagebeforehide', tabsbeforeactivate)
 
   // Peers tabs
 
@@ -152,11 +159,10 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
         // Remove the panel
         $(tabPanelId).remove();
 
-        // If there are no more peer/search tabs, check if we are
-        // sharing or downloading a file and if not, show again the
-        // Home screen
+        // If there are no more peer/search tabs, check if we are sharing or
+        // downloading a file and if not, show again the Home screen
         var disabled = $('#' + tabsId).tabs('option', 'disabled');
-//      if(!index && disabled.length == 2)
+//        if(!index && disabled.length == 2)
         if(disabled.length == 2)
         {
           $('#' + tabsId).tabs('option', 'collapsible', true);
@@ -164,14 +170,19 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
         }
 
         // Refresh the tabs widget
-        tabs.tabs('refresh');
+        if(!$.mobile)
+          tabs.tabs('refresh');
       };
       li.appendChild(span);
 
       $(li).appendTo('#' + tabsId + ' .ui-tabs-nav');
 
       // Tab panel
-      var tabPeer = new TabPeer(uid, tabsId, preferencesDialogOpen, function(fileentry)
+      if($.mobile)
+        $('#Home ul').listview('refresh');
+
+      var tabPeer = new TabPeer(uid, tabsId, preferencesDialogOpen,
+      function(fileentry)
       {
         return function()
         {
