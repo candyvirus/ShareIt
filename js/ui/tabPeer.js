@@ -1,12 +1,39 @@
 function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 {
+  // Tabs
+  var div = document.createElement('DIV');
+      div.id = tabsId + '-' + uid;
+      div.dataset.role = 'page'
+      div.setAttribute('data-add-back-btn', true);
+
+  $(div).appendTo('#' + tabsId);
+
+  // Tab
+  if($.mobile)
+  {
+    var header = document.createElement('DIV');
+        header.dataset.role = 'header'
+        header.dataset.position = 'fixed'
+        header.setAttribute('class', 'only-mobile');
+
+    var h1 = document.createElement('H1');
+        h1.appendChild(document.createTextNode('UID: ' + uid));
+
+    $(h1).appendTo(header);
+
+    $(header).appendTo(div);
+  }
+  else
+  {
+    $('#tabs').tabs('refresh');
+    $('#tabs').tabs('option', 'active', -1);
+  }
+
+  // Table
   var table = document.createElement('TABLE');
-  table.id = tabsId + '-' + uid;
-  $(table).appendTo('#' + tabsId);
+  div.appendChild(table);
 
-  $('#tabs').tabs('refresh');
-  $('#tabs').tabs('option', 'active', -1);
-
+  // Tab panel
   var thead = document.createElement('THEAD');
   table.appendChild(thead);
 
@@ -14,28 +41,28 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
   thead.appendChild(tr);
 
   var th = document.createElement('TH');
-  th.scope = 'col';
-  th.abbr = 'Filename';
-  th.width = '100%';
-  th.appendChild(document.createTextNode('Filename'));
+      th.scope = 'col';
+      th.abbr = 'Filename';
+      th.width = '100%';
+      th.appendChild(document.createTextNode('Filename'));
   tr.appendChild(th);
 
   var th = document.createElement('TH');
-  th.scope = 'col';
-  th.abbr = 'Type';
-  th.appendChild(document.createTextNode('Type'));
+      th.scope = 'col';
+      th.abbr = 'Type';
+      th.appendChild(document.createTextNode('Type'));
   tr.appendChild(th);
 
   var th = document.createElement('TH');
-  th.scope = 'col';
-  th.abbr = 'Size';
-  th.appendChild(document.createTextNode('Size'));
+      th.scope = 'col';
+      th.abbr = 'Size';
+      th.appendChild(document.createTextNode('Size'));
   tr.appendChild(th);
 
   var th = document.createElement('TH');
-  th.scope = 'col';
-  th.abbr = 'Action';
-  th.appendChild(document.createTextNode('Action'));
+      th.scope = 'col';
+      th.abbr = 'Action';
+      th.appendChild(document.createTextNode('Action'));
   tr.appendChild(th);
 
   this.tbody = document.createElement('TBODY');
@@ -45,19 +72,21 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
   this.tbody.appendChild(tr);
 
   var td = document.createElement('TD');
-  td.colSpan = 4;
-  td.align = 'center';
-  td.appendChild(document.createTextNode('Waiting for the peer data'));
+      td.colSpan = 4;
+      td.align = 'center';
+      td.appendChild(document.createTextNode('Waiting for the peer data'));
   tr.appendChild(td);
 
 
   var self = this;
 
-  function buttonFactory(fileentry) {
+  function buttonFactory(fileentry)
+  {
     var div = document.createElement('DIV');
     div.id = fileentry.hash;
 
-    div.transfer = function() {
+    div.transfer = function()
+    {
       var transfer = document.createElement('A');
       transfer.onclick = onclickFactory(fileentry);
       transfer.appendChild(document.createTextNode('Transfer'));
@@ -67,23 +96,26 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
       div.appendChild(transfer);
     };
 
-    div.progressbar = function(value) {
+    div.progressbar = function(value)
+    {
       if (value == undefined) value = 0;
 
       var progress = document.createTextNode(Math.floor(value * 100) + '%');
 
-      while (div.firstChild)
+      while(div.firstChild)
         div.removeChild(div.firstChild);
       div.appendChild(progress);
     };
 
-    div.open = function(blob) {
+    div.open = function(blob)
+    {
       var open = document.createElement('A');
       open.href = window.URL.createObjectURL(blob);
       open.target = '_blank';
       open.appendChild(document.createTextNode('Open'));
 
-      while (div.firstChild) {
+      while(div.firstChild)
+      {
         window.URL.revokeObjectURL(div.firstChild.href);
         div.removeChild(div.firstChild);
       }
@@ -91,13 +123,18 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     };
 
     // Show if file have been downloaded previously or if we can transfer it
-    if (fileentry.bitmap) {
+    if(fileentry.bitmap)
+    {
       var chunks = fileentry.size / chunksize;
-      if (chunks % 1 != 0) chunks = Math.floor(chunks) + 1;
+      if(chunks % 1 != 0)
+         chunks = Math.floor(chunks) + 1;
 
       div.progressbar(fileentry.bitmap.indexes(true).length / chunks);
-    } else if (fileentry.blob) div.open(fileentry.blob);
-    else div.transfer();
+    }
+    else if(fileentry.blob)
+      div.open(fileentry.blob);
+    else
+      div.transfer();
 
     $(self).on(fileentry.hash + '.begin', function(event)
     {
@@ -115,22 +152,23 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     return div;
   }
 
-  function noFilesCaption() {
+  function noFilesCaption()
+  {
     // Compose no files shared content (fail-back)
     var captionCell = spanedCell(table);
     captionCell.appendChild(document.createTextNode('Remote peer is not sharing files.'));
 
-    //        var anchor = document.createElement('A')
-    //            anchor.id = 'ConnectUser'
-    //            anchor.style.cursor = 'pointer'
-    //        captionCell.appendChild(anchor)
-    //
-    //        $(anchor).click(preferencesDialogOpen)
-    //
-    //        var span = document.createElement('SPAN')
-    //            span.setAttribute("class", "user")
-    //            span.appendChild(document.createTextNode("Connect to a user"))
-    //        anchor.appendChild(span)
+//    var anchor = document.createElement('A')
+//        anchor.id = 'ConnectUser'
+//        anchor.style.cursor = 'pointer'
+//    captionCell.appendChild(anchor)
+//
+//    $(anchor).click(preferencesDialogOpen)
+//
+//    var span = document.createElement('SPAN')
+//        span.setAttribute("class", "user")
+//        span.appendChild(document.createTextNode("Connect to a user"))
+//    anchor.appendChild(span)
     captionCell.appendChild(document.createTextNode(" Why don't ask him about doing it?"));
 
     return captionCell;
@@ -138,7 +176,8 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFactory(fileentry) {
+  function rowFactory(fileentry)
+  {
     var tr = document.createElement('TR');
 
     var td = document.createElement('TD');
@@ -148,42 +187,45 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
     // Name & icon
     var span = document.createElement('SPAN');
-    span.className = filetype2className(type);
-    span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
+        span.className = filetype2className(type);
+        span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
     td.appendChild(span);
 
     // Type
     var td = document.createElement('TD');
-    td.appendChild(document.createTextNode(type || '(unknown)'));
+        td.appendChild(document.createTextNode(type || '(unknown)'));
     tr.appendChild(td);
 
     // Size
     var size = (fileentry.size != undefined) ? fileentry.size : fileentry.file.size;
     var td = document.createElement('TD');
-    td.className = 'filesize';
-    td.appendChild(document.createTextNode(humanize.filesize(size)));
+        td.className = 'filesize';
+        td.appendChild(document.createTextNode(humanize.filesize(size)));
     tr.appendChild(td);
 
     // Action
     var td = document.createElement('TD');
-    td.class = 'end';
-    td.appendChild(buttonFactory(fileentry));
+        td.class = 'end';
+        td.appendChild(buttonFactory(fileentry));
     tr.appendChild(td);
 
     return tr;
   }
 
-  this.updateFiles = function(fileslist) {
+  this.updateFiles = function(fileslist)
+  {
     var prevPath = '';
 
-    for (var i = 0, fileentry; fileentry = fileslist[i]; i++) {
+    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
+    {
       // Add folder row
       prevPath = rowFolder(this.tbody, prevPath, fileentry.path);
 
       // Add file row
       var tr = rowFactory(fileentry);
 
-      if (prevPath) tr.setAttribute('class', 'child-of-' + classEscape(prevPath));
+      if(prevPath)
+        tr.setAttribute('class', 'child-of-' + classEscape(prevPath));
 
       this.tbody.appendChild(tr);
     }
