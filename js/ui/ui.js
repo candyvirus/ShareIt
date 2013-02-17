@@ -112,20 +112,22 @@ function UI(webp2p)
   window.onbeforeunload = function()
   {
     // Allow to exit the application normally if we are not connected
-    var peers = webp2p.numPeers()
-    if(!peers)
-      return;
+    webp2p.numPeers(function(peers)
+    {
+      if(!peers)
+        return;
 
-    // Downloading
-    if(isDownloading)
-      return 'You are currently downloading files.';
+      // Downloading
+      if(isDownloading)
+        return 'You are currently downloading files.';
 
-    // Sharing
-    if(isSharing)
-      return 'You are currently sharing files.';
+      // Sharing
+      if(isSharing)
+        return 'You are currently sharing files.';
 
-    // Routing (connected to at least two peers or handshake servers)
-    if(peers >= 2)
-      return 'You are currently routing between ' + peers + ' peers.';
+      // Routing (connected to at least two peers or handshake servers)
+      if(peers >= 2)
+        return 'You are currently routing between ' + peers + ' peers.';
+    })
   };
 }
