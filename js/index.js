@@ -4,7 +4,8 @@ function load()
   DB_init(function(db)
   {
     // Init PeersManager and set it to the user interface
-    UI(new PeersManager(db))
+    UI(new webp2p.Webp2pLocal(db))
+//    UI(new PeersManager(db))
   })
 }
 

@@ -185,7 +185,7 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
           policy(function()
           {
             // Begin transfer of file
-            peersManager._transferbegin(fileentry);
+            peersManager.transfer_begin(fileentry);
 
             // Don't buble click event
             return false;

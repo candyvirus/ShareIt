@@ -1,4 +1,4 @@
-function DialogConfig(dialogId, options, peersManager)
+function DialogConfig(dialogId, options, webp2p)
 {
   var self = this;
 
@@ -9,10 +9,6 @@ function DialogConfig(dialogId, options, peersManager)
   dialog.tabs({
     active: 0
   });
-
-
-    var cacheBackup = peersManager.cacheBackup
-    var sharedpointsManager = peersManager.sharedpointsManager
 
 
     /**
@@ -44,7 +40,7 @@ function DialogConfig(dialogId, options, peersManager)
   function sharedpoints_update()
   {
     // Get shared points and init them with the new ones
-    sharedpointsManager.getSharedpoints(function(sharedpoints)
+    webp2p.sharedpointsManager_getSharedpoints(function(sharedpoints)
     {
       tableSharedpoints.update(sharedpoints);
     });
@@ -73,7 +69,7 @@ function DialogConfig(dialogId, options, peersManager)
 
     policy(function()
     {
-      sharedpointsManager.addSharedpoint_Folder(files, function()
+      webp2p.sharedpointsManager_addSharedpoint_Folder(files, function()
       {
         $(self).trigger('sharedpoints.update');
       },
@@ -99,7 +95,7 @@ function DialogConfig(dialogId, options, peersManager)
   {
     policy(function()
     {
-      cacheBackup.export(function(blob)
+      webp2p.cacheBackup_export(function(blob)
       {
         if(blob)
         {
@@ -128,7 +124,7 @@ function DialogConfig(dialogId, options, peersManager)
 
     policy(function()
     {
-      cacheBackup.import(file);
+      webp2p.cacheBackup_import(file);
 
       // Reset the input after got the backup file
       input.val('');
