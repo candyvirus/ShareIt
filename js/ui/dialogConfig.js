@@ -1,28 +1,26 @@
-function DialogConfig(dialogId, options, peersManager)
+function DialogConfig(dialogId, options, webp2p)
 {
   var self = this;
 
   var dialog = $('#' + dialogId);
 
-  if (!$.mobile) dialog.dialog(options);
+  if(!$.mobile)
+    dialog.dialog(options);
 
-  dialog.tabs({
+  dialog.tabs(
+  {
     active: 0
   });
 
 
-    var cacheBackup = peersManager.cacheBackup
-    var sharedpointsManager = peersManager.sharedpointsManager
-
-
-    /**
-     * Open the config dialog on the selected tab
-     * @param {Number|undefined} tabIndex The index of the tab to be open. If
-     * not defined, it open the first one.
-     */
-    this.open = function(tabIndex)
-    {
-        dialog.tabs("option", "active", tabIndex)
+  /**
+   * Open the config dialog on the selected tab
+   * @param {Number|undefined} tabIndex The index of the tab to be open. If
+   * not defined, it open the first one.
+   */
+  this.open = function(tabIndex)
+  {
+    dialog.tabs("option", "active", tabIndex)
 
     if($.mobile)
       $.mobile.changePage(dialog);
@@ -44,7 +42,7 @@ function DialogConfig(dialogId, options, peersManager)
   function sharedpoints_update()
   {
     // Get shared points and init them with the new ones
-    sharedpointsManager.getSharedpoints(function(sharedpoints)
+    webp2p.sharedpointsManager_getSharedpoints(function(sharedpoints)
     {
       tableSharedpoints.update(sharedpoints);
     });
@@ -73,7 +71,7 @@ function DialogConfig(dialogId, options, peersManager)
 
     policy(function()
     {
-      sharedpointsManager.addSharedpoint_Folder(files, function()
+      webp2p.sharedpointsManager_addSharedpoint_Folder(files, function()
       {
         $(self).trigger('sharedpoints.update');
       },
@@ -99,7 +97,7 @@ function DialogConfig(dialogId, options, peersManager)
   {
     policy(function()
     {
-      cacheBackup.export(function(blob)
+      webp2p.cacheBackup_export(function(blob)
       {
         if(blob)
         {
@@ -128,7 +126,7 @@ function DialogConfig(dialogId, options, peersManager)
 
     policy(function()
     {
-      cacheBackup.import(file);
+      webp2p.cacheBackup_import(file);
 
       // Reset the input after got the backup file
       input.val('');
