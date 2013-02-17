@@ -1,16 +1,3 @@
-function load()
-{
-  // Init database
-  DB_init(function(db)
-  {
-    // Init PeersManager and set it to the user interface
-    UI(new webp2p.Webp2pWorker(db))
-//    UI(new webp2p.Webp2pLocal(db))
-//    UI(new PeersManager(db))
-  })
-}
-
-
 window.addEventListener('DOMContentLoaded', function()
 //window.addEventListener("load", function()
 {
@@ -36,7 +23,8 @@ window.addEventListener('DOMContentLoaded', function()
                                 " it can't work as a host.");
 
   // Check for IndexedDB support and if it store File objects
-  testIDBBlobSupport(function(supported) {
+  testIDBBlobSupport(function(supported)
+  {
     if(!supported)
     {
       cm.addWarning('IndexedDB', "Your browser doesn't support storing File " +
@@ -46,11 +34,11 @@ window.addEventListener('DOMContentLoaded', function()
       IdbJS_install();
     }
 
-
     // Show alert if browser requeriments are not meet
     cm.show();
 
     // Start loading the webapp
-    load();
+    UI(new webp2p.Webp2pLocal())
+//    UI(new webp2p.Webp2pWorker())
   });
 });
