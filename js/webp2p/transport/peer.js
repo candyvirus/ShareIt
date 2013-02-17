@@ -55,11 +55,11 @@ function Transport_Peer_init(transport, db, peersManager)
       _fileslist = fileentries;
 
       // Notify about fileslist update
-      transport.dispatchEvent(
-      {
-        type: 'fileslist._updated',
-        data: [_fileslist]
-      });
+      var event = document.createEvent("Event");
+          event.initEvent('fileslist._updated',true,true);
+          event.data = [_fileslist]
+
+      transport.dispatchEvent(event);
     });
   });
 
@@ -104,11 +104,11 @@ function Transport_Peer_init(transport, db, peersManager)
         _fileslist.push(fileentry);
 
         // Notify about fileslist update
-        transport.dispatchEvent(
-        {
-          type: 'fileslist._updated',
-          data: [_fileslist]
-        });
+        var event = document.createEvent("Event");
+            event.initEvent('fileslist._updated',true,true);
+            event.data = [_fileslist]
+
+        transport.dispatchEvent(event);
       });
   });
 
@@ -128,11 +128,11 @@ function Transport_Peer_init(transport, db, peersManager)
         _fileslist.splice(i, 1);
 
         // Notify about fileslist update
-        transport.dispatchEvent(
-        {
-          type: 'fileslist._updated',
-          data: [_fileslist]
-        });
+        var event = document.createEvent("Event");
+            event.initEvent('fileslist._updated',true,true);
+            event.data = [_fileslist]
+
+        transport.dispatchEvent(event);
 
         return;
       }

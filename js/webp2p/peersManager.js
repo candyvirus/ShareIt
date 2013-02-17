@@ -62,7 +62,7 @@ function PeersManager(db, stun_server)
    * Start the download of a file
    * @param {Fileentry} Fileentry of the file to be downloaded.
    */
-  this._transferbegin = function(fileentry)
+  this.transfer_begin = function(fileentry)
   {
     function onerror(errorCode)
     {
@@ -92,18 +92,18 @@ function PeersManager(db, stun_server)
     // and add a bitmap to our file stub
     var chunks = fileentry.size / chunksize;
     if(chunks % 1 != 0)
-      chunks = Math.floor(chunks) + 1;
+       chunks = Math.floor(chunks) + 1;
 
     fileentry.bitmap = new Bitmap(chunks);
 
     // Insert new "file" inside IndexedDB
     db.files_add(fileentry, function()
     {
-      self.dispatchEvent(
-      {
-        type: 'transfer.begin',
-        data: [fileentry]
-      });
+      var event = document.createEvent("Event");
+          event.initEvent('transfer.begin',true,true);
+          event.data = [fileentry]
+
+      self.dispatchEvent(event);
 
       // Demand data from the begining of the file
       transfer_query(fileentry);
@@ -115,14 +115,14 @@ function PeersManager(db, stun_server)
   {
     var chunks = fileentry.size / chunksize;
     if(chunks % 1 != 0)
-      chunks = Math.floor(chunks) + 1;
+       chunks = Math.floor(chunks) + 1;
 
     // Notify about transfer update
-    this.dispatchEvent(
-    {
-      type: 'transfer.update',
-      data: [fileentry, 1 - pending_chunks / chunks]
-    });
+    var event = document.createEvent("Event");
+        event.initEvent('transfer.update',true,true);
+        event.data = [fileentry, 1 - pending_chunks / chunks]
+
+    this.dispatchEvent(event);
   };
 
   this.transfer_end = function(fileentry)
@@ -131,11 +131,12 @@ function PeersManager(db, stun_server)
     savetodisk(fileentry.blob, fileentry.name);
 
     // Notify about transfer end
-    self.dispatchEvent(
-    {
-      type: 'transfer.end',
-      data: [fileentry]
-    });
+    var event = document.createEvent("Event");
+        event.initEvent('transfer.end',true,true);
+        event.data = [fileentry]
+
+    self.dispatchEvent(event);
+
     console.log('Transfer of ' + fileentry.name + ' finished!');
   };
 
@@ -201,10 +202,11 @@ function PeersManager(db, stun_server)
   {
     var self = this;
 
-    this.dispatchEvent({
-      type: 'file.added',
-      data: [fileentry]
-    });
+    var event = document.createEvent("Event");
+        event.initEvent('file.added',true,true);
+        event.data = [fileentry]
+
+    this.dispatchEvent(event);
 
     // Update fileentry sharedpoint size
     db.sharepoints_get(fileentry.sharedpoint, function(sharedpoint)
@@ -214,10 +216,10 @@ function PeersManager(db, stun_server)
 
       db.sharepoints_put(sharedpoint, function()
       {
-        self.dispatchEvent(
-        {
-          type: 'sharedpoints.update'
-        });
+        var event = document.createEvent("Event");
+            event.initEvent('sharedpoints.update',true,true);
+
+        self.dispatchEvent(event);
       });
     });
   };
@@ -230,10 +232,11 @@ function PeersManager(db, stun_server)
   {
     var self = this;
 
-    this.dispatchEvent({
-      type: 'file.deleted',
-      data: [fileentry]
-    });
+    var event = document.createEvent("Event");
+        event.initEvent('file.deleted',true,true);
+        event.data = [fileentry]
+
+    this.dispatchEvent(event);
 
     // Update fileentry sharedpoint size
     db.sharepoints_get(fileentry.sharedpoint, function(sharedpoint)
@@ -243,10 +246,10 @@ function PeersManager(db, stun_server)
 
       db.sharepoints_put(sharedpoint, function()
       {
-        self.dispatchEvent(
-        {
-          type: 'sharedpoints.update'
-        });
+        var event = document.createEvent("Event");
+            event.initEvent('sharedpoints.update',true,true);
+
+        self.dispatchEvent(event);
       });
     });
   };
@@ -427,10 +430,11 @@ function PeersManager(db, stun_server)
   };
   handshakeManager.onopen = function(event)
   {
-    self.dispatchEvent({
-      type: 'uid',
-      data: [self.uid]
-    });
+    var event = document.createEvent("Event");
+        event.initEvent('uid',true,true);
+        event.data = [self.uid]
+
+    self.dispatchEvent(event);
 
 //    // Restart downloads
 //    db.files_getAll(null, function(filelist)
@@ -555,21 +559,13 @@ function PeersManager(db, stun_server)
 
   this.handshakeDisconnected = function()
   {
-    if(!this.numPeers())
-      this.dispatchEvent(
-      {
-        type: 'error.noPeers'
-      });
-  };
+    if(!Object.keys(peers).length)
+    {
+      var event = document.createEvent("Event");
+          event.initEvent('error.noPeers',true,true);
 
-
-  /**
-   * Get the number of peers currently connected with this node
-   * @return {Number} The number of peers connected.
-   */
-  this.numPeers = function()
-  {
-    return Object.keys(peers).length;
+      this.dispatchEvent(event);
+    }
   };
 
 
@@ -602,10 +598,4 @@ function PeersManager(db, stun_server)
       onsuccess(sharing)
     })
   }
-
-  // Init cache backup system
-  this.cacheBackup = new CacheBackup(db, this)
-
-  // Init sharedpoints manager
-  this.sharedpointsManager = new SharedpointsManager(db, this)
 }

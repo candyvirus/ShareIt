@@ -1,14 +1,3 @@
-function load()
-{
-  // Init database
-  DB_init(function(db)
-  {
-    // Init PeersManager and set it to the user interface
-    UI(new PeersManager(db))
-  })
-}
-
-
 window.addEventListener('DOMContentLoaded', function()
 //window.addEventListener("load", function()
 {
@@ -45,11 +34,11 @@ window.addEventListener('DOMContentLoaded', function()
       IdbJS_install();
     }
 
-
     // Show alert if browser requeriments are not meet
     cm.show();
 
     // Start loading the webapp
-    load();
+    UI(new webp2p.Webp2pLocal())
+//    UI(new webp2p.Webp2pWorker())
   });
 });
