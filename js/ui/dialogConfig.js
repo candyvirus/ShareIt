@@ -4,21 +4,23 @@ function DialogConfig(dialogId, options, webp2p)
 
   var dialog = $('#' + dialogId);
 
-  if (!$.mobile) dialog.dialog(options);
+  if(!$.mobile)
+    dialog.dialog(options);
 
-  dialog.tabs({
+  dialog.tabs(
+  {
     active: 0
   });
 
 
-    /**
-     * Open the config dialog on the selected tab
-     * @param {Number|undefined} tabIndex The index of the tab to be open. If
-     * not defined, it open the first one.
-     */
-    this.open = function(tabIndex)
-    {
-        dialog.tabs("option", "active", tabIndex)
+  /**
+   * Open the config dialog on the selected tab
+   * @param {Number|undefined} tabIndex The index of the tab to be open. If
+   * not defined, it open the first one.
+   */
+  this.open = function(tabIndex)
+  {
+    dialog.tabs("option", "active", tabIndex)
 
     if($.mobile)
       $.mobile.changePage(dialog);
