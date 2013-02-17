@@ -1,4 +1,4 @@
-function UI(peersManager)
+function UI(webp2p)
 {
   var isDownloading = false
   var isSharing = false
@@ -25,11 +25,10 @@ function UI(peersManager)
   };
 
 
-    // Config dialog
-    var dialogConfig = new DialogConfig("dialog-config", dialog_options,
-                                        peersManager);
+  // Config dialog
+  var dialogConfig = new DialogConfig("dialog-config", dialog_options, webp2p);
 
-  peersManager.addEventListener('sharedpoints.update', function()
+  webp2p.addEventListener('sharedpoints.update', function()
   {
     $(dialogConfig).trigger('sharedpoints.update');
   });
@@ -44,7 +43,7 @@ function UI(peersManager)
   });
 
 
-  peersManager.addEventListener('error.noPeers', function()
+  webp2p.addEventListener('error.noPeers', function()
   {
     console.error('Not connected to any peer');
 
@@ -54,11 +53,10 @@ function UI(peersManager)
 
 
   // Tabs
-  var tabsMain = new TabsMain('tabs', peersManager,
-                              dialogConfig.preferencesDialogOpen);
+  var tabsMain = new TabsMain('tabs', webp2p, dialogConfig.preferencesDialogOpen);
 
   // Set UID on user interface
-  peersManager.addEventListener('uid', function(event)
+  webp2p.addEventListener('uid', function(event)
   {
     var uid = event.data[0];
 
@@ -79,10 +77,10 @@ function UI(peersManager)
       if(uid != null && uid != '')
       {
         // Create connection with the other peer
-        peersManager.connectTo(uid, function(channel)
+        webp2p.connectTo(uid, function(channel)
         {
           tabsMain.openOrCreatePeer(uid, dialogConfig.preferencesDialogOpen,
-                                    peersManager, channel);
+                                    webp2p, channel);
         },
         function(uid, peer, channel)
         {
@@ -114,20 +112,22 @@ function UI(peersManager)
   window.onbeforeunload = function()
   {
     // Allow to exit the application normally if we are not connected
-    var peers = Object.keys(peersManager.getChannels()).length;
-    if(!peers)
-      return;
+    webp2p.numPeers(function(peers)
+    {
+      if(!peers)
+        return;
 
-    // Downloading
-    if(isDownloading)
-      return 'You are currently downloading files.';
+      // Downloading
+      if(isDownloading)
+        return 'You are currently downloading files.';
 
-    // Sharing
-    if(isSharing)
-      return 'You are currently sharing files.';
+      // Sharing
+      if(isSharing)
+        return 'You are currently sharing files.';
 
-    // Routing (connected to at least two peers or handshake servers)
-    if(peers >= 2)
-      return 'You are currently routing between ' + peers + ' peers.';
+      // Routing (connected to at least two peers or handshake servers)
+      if(peers >= 2)
+        return 'You are currently routing between ' + peers + ' peers.';
+    })
   };
 }
