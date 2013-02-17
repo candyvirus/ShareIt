@@ -1,4 +1,4 @@
-function TabsMain(tabsId, peersManager, preferencesDialogOpen)
+function TabsMain(tabsId, webp2p, preferencesDialogOpen)
 {
   var self = this;
 
@@ -22,7 +22,7 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
   {
     tabDownloading.dirty = requestAnimationFrame(function()
     {
-      peersManager.files_downloading(function(filelist)
+      webp2p.files_downloading(function(filelist)
       {
         self.isDownloading = filelist.length;
         tabDownloading.update(filelist);
@@ -47,15 +47,15 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
     tabDownloading_update();
   }
 
-  peersManager.addEventListener('transfer.begin', tabDownloading_checkAndUpdate);
-  peersManager.addEventListener('transfer.update', function(event)
+  webp2p.addEventListener('transfer.begin', tabDownloading_checkAndUpdate);
+  webp2p.addEventListener('transfer.update', function(event)
   {
     var type = event.data[0];
     var value = event.data[1];
 
     $(tabDownloading).trigger(type, [value]);
   });
-  peersManager.addEventListener('transfer.end', tabDownloading_checkAndUpdate);
+  webp2p.addEventListener('transfer.end', tabDownloading_checkAndUpdate);
 
 
   // Sharing tab
@@ -65,7 +65,7 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
   {
     tabSharing.dirty = requestAnimationFrame(function()
     {
-      peersManager.files_sharing(function(filelist)
+      webp2p.files_sharing(function(filelist)
       {
         self.isSharing = filelist.length;
         tabSharing.update(filelist);
@@ -90,10 +90,10 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
     tabSharing_update();
   }
 
-  peersManager.addEventListener('transfer.end', tabSharing_checkAndUpdate);
+  webp2p.addEventListener('transfer.end', tabSharing_checkAndUpdate);
 
-  peersManager.addEventListener('file.added',   tabSharing_checkAndUpdate);
-  peersManager.addEventListener('file.deleted', tabSharing_checkAndUpdate);
+  webp2p.addEventListener('file.added',   tabSharing_checkAndUpdate);
+  webp2p.addEventListener('file.deleted', tabSharing_checkAndUpdate);
 
 
   function tabsbeforeactivate(event, ui)
@@ -119,7 +119,7 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
   $(document).live('pagebeforehide', tabsbeforeactivate)
 
   // Peers tabs
-  this.openOrCreatePeer = function(uid, preferencesDialogOpen, peersManager, channel)
+  this.openOrCreatePeer = function(uid, preferencesDialogOpen, webp2p, channel)
   {
     var tabPanelId = '#' + tabsId + '-' + uid;
 
@@ -185,7 +185,7 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
           policy(function()
           {
             // Begin transfer of file
-            peersManager.transfer_begin(fileentry);
+            webp2p.transfer_begin(fileentry);
 
             // Don't buble click event
             return false;
@@ -193,20 +193,20 @@ function TabsMain(tabsId, peersManager, preferencesDialogOpen)
         }
       });
 
-      peersManager.addEventListener('transfer.begin', function(event)
+      webp2p.addEventListener('transfer.begin', function(event)
       {
         var fileentry = event.data[0];
 
         $(tabPeer).trigger(fileentry.hash + '.begin');
       });
-      peersManager.addEventListener('transfer.update', function(event)
+      webp2p.addEventListener('transfer.update', function(event)
       {
         var fileentry = event.data[0];
         var value = event.data[1];
 
         $(tabPeer).trigger(fileentry.hash + '.update', [value]);
       });
-      peersManager.addEventListener('transfer.end', function(event)
+      webp2p.addEventListener('transfer.end', function(event)
       {
         var fileentry = event.data[0];
 
