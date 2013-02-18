@@ -71,13 +71,13 @@ function DialogConfig(dialogId, options, webp2p)
 
     policy(function()
     {
-      webp2p.sharedpointsManager_addSharedpoint_Folder(files, function()
+      webp2p.sharedpointsManager_addSharedpoint_Folder(files, function(error)
       {
-        $(self).trigger('sharedpoints.update');
-      },
-      function()
-      {
-        console.warn('Sharedpoint already defined');
+        if(error)
+          console.warn(error);
+
+        else
+          $(self).trigger('sharedpoints.update');
       });
 
       // Reset the input after send the files to hash
