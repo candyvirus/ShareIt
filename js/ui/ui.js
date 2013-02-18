@@ -77,14 +77,13 @@ function UI(webp2p)
       if(uid != null && uid != '')
       {
         // Create connection with the other peer
-        webp2p.connectTo(uid, function(channel)
+        webp2p.connectTo(uid, null, function(error, channel)
         {
-          tabsMain.openOrCreatePeer(uid, dialogConfig.preferencesDialogOpen,
-                                    webp2p, channel);
-        },
-        function(uid, peer, channel)
-        {
-          console.error(uid, peer, channel);
+          if(error)
+            console.error(error);
+          else
+            tabsMain.openOrCreatePeer(uid, dialogConfig.preferencesDialogOpen,
+                                      webp2p, channel);
         });
       }
     }
