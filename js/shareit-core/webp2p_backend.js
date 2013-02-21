@@ -1,4 +1,5 @@
 // Based on code from https://github.com/jaredhanson/jsonrpc-postmessage
+var webp2p = new webp2p.Webp2pLocal()
 
 var methods = {}
 

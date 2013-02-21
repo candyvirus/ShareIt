@@ -11,16 +11,18 @@ webp2p.Webp2pLocal = function()
   }
 
 
+  var peersManager = new PeersManager()
+
   // Init database
   DB_init(function(db)
   {
-    var peersManager = new PeersManager(db)
+    var filesManager = new FilesManager(db, peersManager)
 
     // Init cache backup system
-    var cacheBackup = new CacheBackup(db, peersManager)
+    var cacheBackup = new CacheBackup(db, filesManager)
 
     // Init sharedpoints manager
-    var sharedpointsManager = new SharedpointsManager(db, peersManager)
+    var sharedpointsManager = new SharedpointsManager(db, filesManager)
 
 
     self.cacheBackup_export = function(onfinish, onprogress, onerror)
@@ -49,12 +51,12 @@ webp2p.Webp2pLocal = function()
 
     self.files_downloading = function(onsuccess)
     {
-      peersManager.files_downloading(onsuccess)
+      filesManager.files_downloading(onsuccess)
     }
 
     self.files_sharing = function(onsuccess)
     {
-      peersManager.files_sharing(onsuccess)
+      filesManager.files_sharing(onsuccess)
     }
 
     self.numPeers = function(onsuccess)
@@ -78,21 +80,20 @@ webp2p.Webp2pLocal = function()
      */
     self.transfer_begin = function(fileentry)
     {
-      peersManager.transfer_begin(fileentry)
+      filesManager.transfer_begin(fileentry)
     }
 
 
     peersManager.addEventListener('error.noPeers', forwardEvent);
-
-    peersManager.addEventListener('file.added',   forwardEvent);
-    peersManager.addEventListener('file.deleted', forwardEvent);
-
-    peersManager.addEventListener('sharedpoints.update', forwardEvent);
-
-    peersManager.addEventListener('transfer.begin',  forwardEvent);
-    peersManager.addEventListener('transfer.end',    forwardEvent);
-    peersManager.addEventListener('transfer.update', forwardEvent);
-
     peersManager.addEventListener('uid', forwardEvent);
+
+    filesManager.addEventListener('file.added',   forwardEvent);
+    filesManager.addEventListener('file.deleted', forwardEvent);
+
+    filesManager.addEventListener('sharedpoints.update', forwardEvent);
+
+    filesManager.addEventListener('transfer.begin',  forwardEvent);
+    filesManager.addEventListener('transfer.end',    forwardEvent);
+    filesManager.addEventListener('transfer.update', forwardEvent);
   })
 }

@@ -1,10 +1,10 @@
 /**
  * @fileoverview Magic dependency loading. Taken from JsJaC library.
  * @author Stefan Strigler steve@zeank.in-berlin.de (JsJaC)
- * @author Jesús Leganés Combarro "Piranna" piranna@gmail.com (webp2p)
+ * @author Jesús Leganés Combarro "Piranna" piranna@gmail.com (shareit)
  */
 
-var webp2p =
+var shareit =
 {
   require: function(libraryName)
   {
@@ -19,9 +19,9 @@ var webp2p =
         i;
     for (i = 0; i < scripts.length; i++) {
       var src = scripts.item(i).src;
-      var regex = /webp2p\/index\.js$/;
+      var regex = /shareit-core\/index\.js$/;
       if (src && src.match(regex)) {
-        path = src.replace(regex, 'webp2p/');
+        path = src.replace(regex, 'shareit-core/');
         break;
       }
     }
@@ -37,17 +37,33 @@ var webp2p =
   }
 };
 
-webp2p.load(
-['peersManager',
+shareit.load(
+['bitmap',
+ 'cacheBackup',
+ 'db',
+ 'filesManager',
+ 'utils',
+ 'webp2pLocal',
+ 'webp2pWorker',
 
- 'handshake/index',
- 'handshake/PubNub',
- 'handshake/simpleSignaling',
+ 'hasher/index',
 
- 'lib/datachannel',
- 'lib/EventTarget',
- 'lib/pubnub-3.3.1',
- 'lib/simpleSignaling',
+ 'lib/BoolArray',
+ 'lib/dropbox.min',
 
- 'transport/index',
- 'transport/routing']);
+ 'lib/zip.js/deflate',
+ 'lib/zip.js/inflate',
+ 'lib/zip.js/zip',
+ 'lib/zip.js/zip-fs',
+ 'lib/zip.js/mime-types',
+
+ 'polyfills/FileWriter',
+ 'polyfills/IndexedDB-javascript',
+
+ 'sharedpoints/index',
+ 'sharedpoints/dropbox',
+ 'sharedpoints/mega',
+
+ 'transport/host',
+ 'transport/peer',
+ 'transport/search']);
