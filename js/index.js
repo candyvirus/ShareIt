@@ -39,6 +39,6 @@ window.addEventListener('DOMContentLoaded', function()
 
     // Start loading the webapp
     UI(new webp2p.Webp2pLocal())
-//    UI(new webp2p.Webp2pWorker())
+//    UI(new webp2p.Webp2pRemote())
   });
 });
