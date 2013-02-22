@@ -22,12 +22,17 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
   {
     tabDownloading.dirty = requestAnimationFrame(function()
     {
-      webp2p.files_downloading(function(filelist)
+      webp2p.files_downloading(error, function(filelist)
       {
-        self.isDownloading = filelist.length;
-        tabDownloading.update(filelist);
+        if(error)
+          console.error(error)
+        else
+        {
+          self.isDownloading = filelist.length;
+          tabDownloading.update(filelist);
 
-        tabDownloading.dirty = false;
+          tabDownloading.dirty = false;
+        }
       });
     }, tabDownloading.tbody);
   }
