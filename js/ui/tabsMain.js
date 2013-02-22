@@ -70,12 +70,17 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
   {
     tabSharing.dirty = requestAnimationFrame(function()
     {
-      webp2p.files_sharing(function(filelist)
+      webp2p.files_sharing(function(error, filelist)
       {
-        self.isSharing = filelist.length;
-        tabSharing.update(filelist);
+        if(error)
+          console.error(error)
+        else
+        {
+          self.isSharing = filelist.length;
+          tabSharing.update(filelist);
 
-        tabSharing.dirty = false;
+          tabSharing.dirty = false;
+        }
       });
     }, tabSharing.tbody);
   }
