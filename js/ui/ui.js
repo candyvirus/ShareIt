@@ -111,8 +111,14 @@ function UI(webp2p)
   window.onbeforeunload = function()
   {
     // Allow to exit the application normally if we are not connected
-    webp2p.numPeers(function(peers)
+    webp2p.numPeers(function(error, peers)
     {
+      if(error)
+      {
+        console.error(error)
+        return
+      }
+
       if(!peers)
         return;
 
