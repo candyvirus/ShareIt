@@ -42,9 +42,12 @@ function DialogConfig(dialogId, options, webp2p)
   function sharedpoints_update()
   {
     // Get shared points and init them with the new ones
-    webp2p.sharedpointsManager_getSharedpoints(function(sharedpoints)
+    webp2p.sharedpointsManager_getSharedpoints(function(error, sharedpoints)
     {
-      tableSharedpoints.update(sharedpoints);
+      if(error)
+        console.error(error)
+      else
+        tableSharedpoints.update(sharedpoints);
     });
   }
 
