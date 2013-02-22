@@ -38,7 +38,10 @@ window.addEventListener('DOMContentLoaded', function()
     cm.show();
 
     // Start loading the webapp
-    UI(new webp2p.Webp2pLocal())
-//    UI(new webp2p.Webp2pRemote())
+    var webp2p = new webp2p.Webp2pLocal(function(webp2p)
+//    var webp2p = new webp2p.webp2pRemote(function(webp2p)
+    {
+      UI(webp2p)
+    })
   });
 });
