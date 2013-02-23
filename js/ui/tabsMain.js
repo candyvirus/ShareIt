@@ -22,7 +22,7 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
   {
     tabDownloading.dirty = requestAnimationFrame(function()
     {
-      webp2p.files_downloading(error, function(filelist)
+      webp2p.files_downloading(function(error, filelist)
       {
         if(error)
           console.error(error)
