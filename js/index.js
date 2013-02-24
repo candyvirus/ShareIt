@@ -38,7 +38,7 @@ window.addEventListener('DOMContentLoaded', function()
     cm.show();
 
     // Start loading the webapp
-//    var webp2p = new window.webp2p.Webp2pLocal(function(webp2p)
+//    var webp2p = new window.webp2p.Webp2pLocal(
     var webp2p = new window.webp2p.Webp2pRemote(new Worker('js/shareit-core/webp2p_backend.js'),
     function(webp2p)
     {
