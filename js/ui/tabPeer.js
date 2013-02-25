@@ -1,7 +1,5 @@
-var ui = (function(module){
+var ui = (function(module, shareit){
 var _priv = module._priv = module._priv || {}
-
-_priv.chunksize = 65536;
 
 
 _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
@@ -131,7 +129,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
     // Show if file have been downloaded previously or if we can transfer it
     if(fileentry.bitmap)
     {
-      var chunks = fileentry.size / _priv.chunksize;
+      var chunks = fileentry.size / shareit.chunksize;
       if(chunks % 1 != 0)
          chunks = Math.floor(chunks) + 1;
 
@@ -240,4 +238,4 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 _priv.TabPeer.prototype = _priv.FilesTable;
 
 return module
-})(ui || {})
+})(ui || {}, shareit)
