@@ -68,7 +68,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 
 
   // Sharing tab
-  var tabSharing = new TabSharing('Sharing', preferencesDialogOpen);
+  var tabSharing = new _priv.TabSharing('Sharing', preferencesDialogOpen);
 
   function tabSharing_update()
   {
@@ -191,7 +191,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
       if($.mobile)
         $('#Home ul').listview('refresh');
 
-      var tabPeer = new TabPeer(uid, tabsId, preferencesDialogOpen,
+      var tabPeer = new _priv.TabPeer(uid, tabsId, preferencesDialogOpen,
       function(fileentry)
       {
         return function()
@@ -248,7 +248,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 
 
   // Tools menu
-  MenuTools('tools-menu');
+  _priv.MenuTools('tools-menu');
 }
 
 return module

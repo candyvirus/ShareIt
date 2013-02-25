@@ -16,7 +16,7 @@ _priv.TableSharedpoints = function(tableId, onclickFactory)
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
+    var cell = _priv.spanedCell(table);
     cell.appendChild(document.createTextNode('There are no shared points. '));
 
     var anchor = document.createElement('A');
@@ -100,7 +100,7 @@ _priv.TableSharedpoints = function(tableId, onclickFactory)
     }
   };
 }
-TableSharedpoints.prototype = FilesTable;
+_priv.TableSharedpoints.prototype = _priv.FilesTable;
 
 return module
 })(ui || {})

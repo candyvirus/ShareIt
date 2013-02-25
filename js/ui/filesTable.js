@@ -1,7 +1,7 @@
 var ui = (function(module){
 var _priv = module._priv = module._priv || {}
 
-function filetype2className(filetype)
+_priv.filetype2className = function(filetype)
 {
   filetype = filetype.split('/');
 
@@ -17,7 +17,7 @@ function filetype2className(filetype)
   return 'file';
 }
 
-function spanedCell(table)
+_priv.spanedCell = function(table)
 //Creates a cell that span over all the columns of a table
 {
   var td = document.createElement('TD');
@@ -27,19 +27,19 @@ function spanedCell(table)
   return td;
 }
 
-function classEscape(text)
+_priv.classEscape = function(text)
 {
   return text.replace(/\./g, '_').replace(/ /g, '__').replace(/\//g, '___');
 }
 
-function rowFolder(tbody, prevPath, path)
+_priv.rowFolder = function(tbody, prevPath, path)
 {
   if(prevPath == path)
     return prevPath;
 
   // Folder row
   var tr = document.createElement('TR');
-  tr.id = classEscape(path);
+  tr.id = _priv.classEscape(path);
 
   var td = document.createElement('TD');
   td.colSpan = 2;
@@ -55,7 +55,7 @@ function rowFolder(tbody, prevPath, path)
 
   var path_tokens = path_tokens.slice(0, -1);
   if(path_tokens.length)
-    tr.setAttribute('class', 'child-of-'+classEscape(path_tokens.join('/')));
+    tr.setAttribute('class', 'child-of-'+_priv.classEscape(path_tokens.join('/')));
 
   tbody.appendChild(tr);
 

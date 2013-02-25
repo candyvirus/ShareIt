@@ -34,7 +34,8 @@ _priv.DialogConfig = function(dialogId, options, shareit)
 
   // Sharedpoints tab
   // Sharedpoints table
-  var tableSharedpoints = new TableSharedpoints('Sharedpoints', function(fileentry)
+  var tableSharedpoints = new _priv.TableSharedpoints('Sharedpoints',
+  function(fileentry)
   {
     return function()
     {

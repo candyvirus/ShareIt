@@ -29,7 +29,7 @@ module.UI = function(shareit)
 
 
   // Config dialog
-  var dialogConfig = new DialogConfig("dialog-config", dialog_options, shareit);
+  var dialogConfig = new _priv.DialogConfig("dialog-config", dialog_options, shareit);
 
   shareit.addEventListener('sharedpoints.update', function()
   {
@@ -38,7 +38,7 @@ module.UI = function(shareit)
 
 
   // About dialog
-  var dialogAbout = new DialogAbout('dialog-about', dialog_options);
+  var dialogAbout = new _priv.DialogAbout('dialog-about', dialog_options);
 
   $('#About').click(function()
   {
@@ -56,7 +56,8 @@ module.UI = function(shareit)
 
 
   // Tabs
-  var tabsMain = new TabsMain('tabs', shareit, dialogConfig.preferencesDialogOpen);
+  var tabsMain = new _priv.TabsMain('tabs', shareit,
+                                    dialogConfig.preferencesDialogOpen);
 
   // Set UID on user interface
   shareit.addEventListener('uid', function(event)
