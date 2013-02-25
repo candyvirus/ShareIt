@@ -1,4 +1,7 @@
-function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 {
   // Tabs
   var div = document.createElement('DIV');
@@ -232,3 +235,6 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
   };
 }
 TabPeer.prototype = FilesTable;
+
+return module
+})(ui || {})

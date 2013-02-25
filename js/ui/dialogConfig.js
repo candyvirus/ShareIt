@@ -1,4 +1,7 @@
-function DialogConfig(dialogId, options, shareit)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.DialogConfig = function(dialogId, options, shareit)
 {
   var self = this;
 
@@ -146,3 +149,6 @@ function DialogConfig(dialogId, options, shareit)
     input.click();
   });
 }
+
+return module
+})(ui || {})

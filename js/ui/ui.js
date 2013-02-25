@@ -1,4 +1,7 @@
-function UI(shareit)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+module.UI = function(shareit)
 {
   var isDownloading = false
   var isSharing = false
@@ -136,3 +139,6 @@ function UI(shareit)
     })
   };
 }
+
+return module
+})(ui || {})

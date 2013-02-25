@@ -1,4 +1,7 @@
-function TabsMain(tabsId, shareit, preferencesDialogOpen)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 {
   var self = this;
 
@@ -16,7 +19,8 @@ function TabsMain(tabsId, shareit, preferencesDialogOpen)
 
 
   // Downloading tab
-  var tabDownloading = new TabDownloading('Downloading', preferencesDialogOpen);
+  var tabDownloading = new _priv.TabDownloading('Downloading',
+                                                preferencesDialogOpen);
 
   function tabDownloading_update()
   {
@@ -246,3 +250,6 @@ function TabsMain(tabsId, shareit, preferencesDialogOpen)
   // Tools menu
   MenuTools('tools-menu');
 }
+
+return module
+})(ui || {})

@@ -1,4 +1,7 @@
-function TabDownloading(tableId, preferencesDialogOpen)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabDownloading = function(tableId, preferencesDialogOpen)
 {
   var self = this;
 
@@ -145,3 +148,6 @@ function TabDownloading(tableId, preferencesDialogOpen)
   };
 }
 TabDownloading.prototype = FilesTable;
+
+return module
+})(ui || {})

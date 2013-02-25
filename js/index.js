@@ -38,11 +38,11 @@ window.addEventListener('DOMContentLoaded', function()
     cm.show();
 
     // Start loading the webapp
-//    var shareit = new window.shareit.Local(
-    var shareit = new window.shareit.Remote(new Worker('js/shareit-core/shareit_backend.js'),
+//    var shareit = new shareit.Local(
+    var shareit = new shareit.Remote(new Worker('js/shareit-core/shareit_backend.js'),
     function(shareit)
     {
-      UI(shareit)
+      ui.UI(shareit)
     })
   });
 });
