@@ -1,4 +1,4 @@
-function DialogConfig(dialogId, options, webp2p)
+function DialogConfig(dialogId, options, shareit)
 {
   var self = this;
 
@@ -42,7 +42,7 @@ function DialogConfig(dialogId, options, webp2p)
   function sharedpoints_update()
   {
     // Get shared points and init them with the new ones
-    webp2p.sharedpointsManager_getSharedpoints(function(error, sharedpoints)
+    shareit.sharedpointsManager_getSharedpoints(function(error, sharedpoints)
     {
       if(error)
         console.error(error)
@@ -74,7 +74,7 @@ function DialogConfig(dialogId, options, webp2p)
 
     policy(function()
     {
-      webp2p.sharedpointsManager_addSharedpoint_Folder(files, function(error)
+      shareit.sharedpointsManager_addSharedpoint_Folder(files, function(error)
       {
         if(error)
           console.warn(error);
@@ -100,12 +100,12 @@ function DialogConfig(dialogId, options, webp2p)
   {
     policy(function()
     {
-      webp2p.cacheBackup_export(function(blob)
+      shareit.cacheBackup_export(function(blob)
       {
         if(blob)
         {
           var date = new Date();
-          var name = 'WebP2P-CacheBackup_' + date.toISOString() + '.zip';
+          var name = 'ShareIt-CacheBackup_' + date.toISOString() + '.zip';
 
           savetodisk(blob, name);
         }
@@ -129,7 +129,7 @@ function DialogConfig(dialogId, options, webp2p)
 
     policy(function()
     {
-      webp2p.cacheBackup_import(file);
+      shareit.cacheBackup_import(file);
 
       // Reset the input after got the backup file
       input.val('');

@@ -1,4 +1,4 @@
-function UI(webp2p)
+function UI(shareit)
 {
   var isDownloading = false
   var isSharing = false
@@ -26,9 +26,9 @@ function UI(webp2p)
 
 
   // Config dialog
-  var dialogConfig = new DialogConfig("dialog-config", dialog_options, webp2p);
+  var dialogConfig = new DialogConfig("dialog-config", dialog_options, shareit);
 
-  webp2p.addEventListener('sharedpoints.update', function()
+  shareit.addEventListener('sharedpoints.update', function()
   {
     $(dialogConfig).trigger('sharedpoints.update');
   });
@@ -43,7 +43,7 @@ function UI(webp2p)
   });
 
 
-  webp2p.addEventListener('error.noPeers', function()
+  shareit.addEventListener('error.noPeers', function()
   {
     console.error('Not connected to any peer');
 
@@ -53,10 +53,10 @@ function UI(webp2p)
 
 
   // Tabs
-  var tabsMain = new TabsMain('tabs', webp2p, dialogConfig.preferencesDialogOpen);
+  var tabsMain = new TabsMain('tabs', shareit, dialogConfig.preferencesDialogOpen);
 
   // Set UID on user interface
-  webp2p.addEventListener('uid', function(event)
+  shareit.addEventListener('uid', function(event)
   {
     var uid = event.data[0];
 
@@ -77,13 +77,13 @@ function UI(webp2p)
       if(uid != null && uid != '')
       {
         // Create connection with the other peer
-        webp2p.connectTo(uid, null, function(error, channel)
+        shareit.connectTo(uid, null, function(error, channel)
         {
           if(error)
             console.error(error);
           else
             tabsMain.openOrCreatePeer(uid, dialogConfig.preferencesDialogOpen,
-                                      webp2p, channel);
+                                      shareit, channel);
         });
       }
     }
@@ -111,7 +111,7 @@ function UI(webp2p)
   window.onbeforeunload = function()
   {
     // Allow to exit the application normally if we are not connected
-    webp2p.numPeers(function(error, peers)
+    shareit.numPeers(function(error, peers)
     {
       if(error)
       {

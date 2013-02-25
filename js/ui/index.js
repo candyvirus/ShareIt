@@ -1,7 +1,7 @@
 /**
  * @fileoverview Magic dependency loading. Taken from JsJaC library.
  * @author Stefan Strigler steve@zeank.in-berlin.de (JsJaC)
- * @author Jesús Leganés Combarro "Piranna" piranna@gmail.com (webp2p)
+ * @author Jesús Leganés Combarro "Piranna" piranna@gmail.com (ShareIt!)
  */
 
 var ui = {
