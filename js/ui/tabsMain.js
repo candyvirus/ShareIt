@@ -59,8 +59,8 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   shareit.addEventListener('transfer.begin', tabDownloading_checkAndUpdate);
   shareit.addEventListener('transfer.update', function(event)
   {
-    var type = event.data[0];
-    var value = event.data[1];
+    var type = event.type;
+    var value = event.value;
 
     $(tabDownloading).trigger(type, [value]);
   });
@@ -209,20 +209,20 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 
       shareit.addEventListener('transfer.begin', function(event)
       {
-        var fileentry = event.data[0];
+        var fileentry = event.fileentry;
 
         $(tabPeer).trigger(fileentry.hash + '.begin');
       });
       shareit.addEventListener('transfer.update', function(event)
       {
-        var fileentry = event.data[0];
-        var value = event.data[1];
+        var fileentry = event.fileentry;
+        var value = event.value;
 
         $(tabPeer).trigger(fileentry.hash + '.update', [value]);
       });
       shareit.addEventListener('transfer.end', function(event)
       {
-        var fileentry = event.data[0];
+        var fileentry = event.fileentry;
 
         $(tabPeer).trigger(fileentry.hash + '.end');
       });
@@ -231,7 +231,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
       // and update the UI peer files table
       channel.addEventListener('fileslist._updated', function(event)
       {
-        var fileslist = event.data[0];
+        var fileslist = event.fileentry;
 
         tabPeer.update(fileslist);
       });

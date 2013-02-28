@@ -62,7 +62,7 @@ module.UI = function(shareit)
   // Set UID on user interface
   shareit.addEventListener('uid', function(event)
   {
-    var uid = event.data[0];
+    var uid = event.uid;
 
     $('#UID-home, #UID-about').val(uid);
 
