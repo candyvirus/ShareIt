@@ -47,9 +47,9 @@ _priv.Transport_Routing_init = function(transport, peersManager)
    */
   transport.addEventListener('offer', function(event)
   {
-    var dest = event.data[0];
-    var sdp = event.data[1];
-    var route = event.data[2];
+    var dest = event.dest;
+    var sdp = event.sdp;
+    var route = event.route;
 
     // If a message have been already routed by this peer, ignore it
     for(var i = 0, uid; uid = route[i]; i++)
@@ -117,9 +117,9 @@ _priv.Transport_Routing_init = function(transport, peersManager)
    */
   transport.addEventListener('answer', function(event)
   {
-    var orig = event.data[0];
-    var sdp = event.data[1];
-    var route = event.data[2];
+    var orig = event.orig;
+    var sdp = event.sdp;
+    var route = event.route;
 
     // Answer is from ourselves or we don't know where it goes, ignore it
     if(orig == peersManager.uid

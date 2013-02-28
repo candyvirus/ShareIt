@@ -25,8 +25,8 @@ _priv.Transport_Search_init = function(transport, db, peersManager)
 
   transport.addEventListener('search.hash', function(event)
   {
-    var hashes = event.data[0];
-    var route = event.data[1];
+    var hashes = event.hashes;
+    var route = event.route;
 
     // Check if we have answered this request
     for(var i = 0, uid; uid = route[i]; i++)

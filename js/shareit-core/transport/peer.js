@@ -43,7 +43,7 @@ _priv.Transport_Peer_init = function(transport, db, filesManager)
    */
   transport.addEventListener('fileslist.send', function(event)
   {
-    var fileentries = event.data[0];
+    var fileentries = event.fileentries;
 
     // Check if we have already any of the files
     // It's stupid to try to download it... and also give errors
@@ -92,7 +92,7 @@ _priv.Transport_Peer_init = function(transport, db, filesManager)
    */
   transport.addEventListener('fileslist.added', function(event)
   {
-    var fileentry = event.data[0];
+    var fileentry = event.fileentry;
 
     // Check if we have the file previously listed
     for(var i = 0, listed; listed = _fileslist[i]; i++)
@@ -128,7 +128,7 @@ _priv.Transport_Peer_init = function(transport, db, filesManager)
    */
   transport.addEventListener('fileslist.deleted', function(event)
   {
-    var fileentry = event.data[0];
+    var fileentry = event.fileentry;
 
     // Search for the fileentry on the fileslist
     for(var i = 0, listed; listed = _fileslist[i]; i++)
@@ -156,9 +156,9 @@ _priv.Transport_Peer_init = function(transport, db, filesManager)
    */
   transport.addEventListener('transfer.send', function(event)
   {
-    var hash = event.data[0];
-    var chunk = parseInt(event.data[1]);
-    var data = event.data[2];
+    var hash = event.hash;
+    var chunk = parseInt(event.chunk);
+    var data = event.data;
 
     // Fix back data transmited as UTF-8 to binary
     var byteArray = new Uint8Array(data.length);

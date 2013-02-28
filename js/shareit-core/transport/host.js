@@ -96,7 +96,7 @@ _priv.Transport_Host_init = function(transport, db)
    */
   transport.addEventListener('fileslist.query', function(event)
   {
-    var flags = event.data[0];
+    var flags = event.flags;
 
     db.files_getAll(null, function(error, fileslist)
     {
@@ -124,8 +124,8 @@ _priv.Transport_Host_init = function(transport, db)
    */
   transport.addEventListener('transfer.query', function(event)
   {
-    var hash = event.data[0];
-    var chunk = event.data[1];
+    var hash = event.hash;
+    var chunk = event.chunk;
 
     var reader = new FileReader();
     reader.onerror = function(evt)
