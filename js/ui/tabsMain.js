@@ -59,10 +59,10 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   shareit.addEventListener('transfer.begin', tabDownloading_checkAndUpdate);
   shareit.addEventListener('transfer.update', function(event)
   {
-    var type = event.type;
+    var fileentry = event.fileentry;
     var value = event.value;
 
-    $(tabDownloading).trigger(type, [value]);
+    $(tabDownloading).trigger(fileentry, [value]);
   });
   shareit.addEventListener('transfer.end', tabDownloading_checkAndUpdate);
 
