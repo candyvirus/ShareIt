@@ -231,7 +231,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
       // and update the UI peer files table
       channel.addEventListener('fileslist._updated', function(event)
       {
-        var fileslist = event.fileentry;
+        var fileslist = event.fileslist;
 
         tabPeer.update(fileslist);
       });
