@@ -101,15 +101,16 @@ to transfer files through the wild Internet from Finland to Spain... :-) ).
 
 ## License
 
-All this code is under the Affero GNU General Public License for non-proffit,
+All this code is under the Affero GNU General Public License for non-profit,
 personal and/or academic purposses, and I will thank you if you send me an email
 to tell me your story and add some references to this project if this is your
 case. Regarding to other cases, I would be able to give you a commercial
 license, please contact me to talk about it.
 
-The core of the application at js/webp2p (that I'll distribute as an independent
-library/framework some date in the future) I am willing to relicense it under
-the BSD/MIT/Apache license, I simply ask that you email me and tell me why. I'll
-almost certainly agree.
+The WebP2P protocol library (located at js/webp2p) and the ShareIt! app core
+(located at js/shareit-core) will be distributed as independent libraries
+some date in the future, and I am willing to relicense them under
+the BSD/MIT/Apache license if requested, I simply ask that you email me and tell
+me why. I'll almost certainly agree.
 
 Patches graciously accepted!

@@ -38,7 +38,11 @@ window.addEventListener('DOMContentLoaded', function()
     cm.show();
 
     // Start loading the webapp
-    UI(new webp2p.Webp2pLocal())
-//    UI(new webp2p.Webp2pWorker())
+    var core = new shareit.Local(
+//    var core = new shareit.Remote(new Worker('js/shareit-core/shareit_backend.js'),
+    function(core)
+    {
+      ui.UI(core)
+    })
   });
 });

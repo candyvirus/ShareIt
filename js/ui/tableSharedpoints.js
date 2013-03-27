@@ -1,23 +1,30 @@
-function No_FileReader() {
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+function No_FileReader()
+{
   $('#Sharedpoints').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
 }
 
 
-function TableSharedpoints(tableId, onclickFactory) {
+_priv.TableSharedpoints = function(tableId, onclickFactory)
+{
   var table = document.getElementById(tableId);
   this.tbody = table.getElementsByTagName('tbody')[0];
 
 
-  function noFilesCaption() {
+  function noFilesCaption()
+  {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
+    var cell = _priv.spanedCell(table);
     cell.appendChild(document.createTextNode('There are no shared points. '));
 
     var anchor = document.createElement('A');
     anchor.style.cursor = 'pointer';
     cell.appendChild(anchor);
 
-    $(anchor).click(function() {
+    $(anchor).click(function()
+    {
       $('#files').click();
     });
 
@@ -33,7 +40,8 @@ function TableSharedpoints(tableId, onclickFactory) {
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFactory(fileentry) {
+  function rowFactory(fileentry)
+  {
     var tr = document.createElement('TR');
 
     var td = document.createElement('TD');
@@ -63,26 +71,36 @@ function TableSharedpoints(tableId, onclickFactory) {
     return tr;
   }
 
-  this.updateFiles = function(fileslist) {
-    for (var i = 0, fileentry; fileentry = fileslist[i]; i++) {
+  this.updateFiles = function(fileslist)
+  {
+    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
+    {
       // Calc path
       var path = '';
-      if (fileentry.sharedpoint) path += fileentry.sharedpoint + '/';
-      if (fileentry.path) path += fileentry.path + '/';
+      if(fileentry.sharedpoint)
+        path += fileentry.sharedpoint + '/';
+      if(fileentry.path)
+        path += fileentry.path + '/';
 
       var name = '';
-      if (fileentry.file) name = fileentry.file.name;
-      else name = fileentry.name;
+      if(fileentry.file)
+        name = fileentry.file.name;
+      else
+        name = fileentry.name;
 
       var child = path.split('/').slice(0, -1).join('/').replace(' ', '');
 
       // Add file row
       var tr = rowFactory(fileentry);
-      //                    tr.id = path + name
-      if (child) tr.setAttribute('class', 'child-of-' + child);
+//        tr.id = path + name
+      if(child)
+        tr.setAttribute('class', 'child-of-' + child);
 
       this.tbody.appendChild(tr);
     }
   };
 }
-TableSharedpoints.prototype = FilesTable;
+_priv.TableSharedpoints.prototype = _priv.FilesTable;
+
+return module
+})(ui || {})

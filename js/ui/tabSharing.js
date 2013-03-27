@@ -1,14 +1,20 @@
-function TabSharing(tableId, preferencesDialogOpen) {
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabSharing = function(tableId, preferencesDialogOpen)
+{
   var self = this;
 
   var table = document.getElementById(tableId);
   this.tbody = table.getElementsByTagName('tbody')[0];
 
 
-  function noFilesCaption() {
+  function noFilesCaption()
+  {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
-    cell.appendChild(document.createTextNode('You are not sharing any file, ' + 'please add a shared point on the '));
+    var cell = _priv.spanedCell(table);
+    cell.appendChild(document.createTextNode('You are not sharing any file, '+
+                                             'please add a shared point on the '));
 
     var anchor = document.createElement('A');
     anchor.id = 'Preferences';
@@ -48,7 +54,7 @@ function TabSharing(tableId, preferencesDialogOpen) {
     // [ToDo] ObjectURL should be destroyed somewhere...
     //window.URL.revokeObjectURL(div.firstChild.href);
     var span = document.createElement('SPAN');
-    span.className = filetype2className(type);
+    span.className = _priv.filetype2className(type);
     span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
     a.appendChild(span);
 
@@ -68,10 +74,11 @@ function TabSharing(tableId, preferencesDialogOpen) {
     return tr;
   }
 
-  function rowSharedpoint(tbody, sharedpoint) {
+  function rowSharedpoint(tbody, sharedpoint)
+  {
     // Sharedpoint row
     var tr = document.createElement('TR');
-    tr.id = classEscape(sharedpoint);
+    tr.id = _priv.classEscape(sharedpoint);
 
     var td = document.createElement('TD');
     td.colSpan = 2;
@@ -86,16 +93,20 @@ function TabSharing(tableId, preferencesDialogOpen) {
     tbody.appendChild(tr);
   }
 
-  this.updateFiles = function(fileslist) {
+  this.updateFiles = function(fileslist)
+  {
     var prevSharedpoint = null;
     var prevPath = '';
 
-    for (var i = 0, fileentry; fileentry = fileslist[i]; i++) {
+    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
+    {
       // Add sharedpoint row
       var sharedpoint = fileentry.sharedpoint;
 
-      if (prevSharedpoint != sharedpoint) {
-        if (sharedpoint) rowSharedpoint(this.tbody, sharedpoint);
+      if(prevSharedpoint != sharedpoint)
+      {
+        if(sharedpoint)
+          rowSharedpoint(this.tbody, sharedpoint);
 
         prevSharedpoint = sharedpoint;
         prevPath = '';
@@ -104,23 +115,29 @@ function TabSharing(tableId, preferencesDialogOpen) {
       // Add folder row
       var path = fileentry.path;
 
-      if (prevSharedpoint && path) {
+      if(prevSharedpoint && path)
+      {
         path = prevSharedpoint + '/' + path;
 
-        prevPath = rowFolder(this.tbody, prevPath, path);
+        prevPath = _priv.rowFolder(this.tbody, prevPath, path);
       }
 
       // Add file row
       var tr = rowFactory(fileentry);
 
-      if (sharedpoint) {
-        if (prevPath) sharedpoint = prevPath;
+      if(sharedpoint)
+      {
+        if(prevPath)
+          sharedpoint = prevPath;
 
-        tr.setAttribute('class', 'child-of-' + classEscape(sharedpoint));
+        tr.setAttribute('class', 'child-of-' + _priv.classEscape(sharedpoint));
       }
 
       this.tbody.appendChild(tr);
     }
   };
 }
-TabSharing.prototype = FilesTable;
+_priv.TabSharing.prototype = _priv.FilesTable;
+
+return module
+})(ui || {})
