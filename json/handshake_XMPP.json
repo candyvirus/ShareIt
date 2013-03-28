@@ -1,0 +1,13 @@
+[
+    [
+        "XMPP",
+        {
+            "httpbase": "https://bind.jappix.com/",
+
+            "domain":   "anonymous.jappix.com",
+
+            "authtype": "saslanon",
+            "secure":   true
+        }
+    ]
+]
