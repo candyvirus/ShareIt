@@ -7,7 +7,9 @@
             "domain":   "anonymous.jappix.com",
 
             "authtype": "saslanon",
-            "secure":   true
+            "secure":   true,
+
+            "room": "webp2p@muc.jappix.com"
         }
     ]
 ]
