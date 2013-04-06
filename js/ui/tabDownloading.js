@@ -1,4 +1,7 @@
-function TabDownloading(tableId, preferencesDialogOpen)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabDownloading = function(tableId, preferencesDialogOpen)
 {
   var self = this;
 
@@ -9,7 +12,7 @@ function TabDownloading(tableId, preferencesDialogOpen)
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
+    var cell = _priv.spanedCell(table);
     cell.appendChild(document.createTextNode('There are no downloads, '));
 
     var anchor = document.createElement('A');
@@ -40,7 +43,7 @@ function TabDownloading(tableId, preferencesDialogOpen)
 
     // Name & icon
     var span = document.createElement('SPAN');
-    span.className = filetype2className(fileentry.type);
+    span.className = _priv.filetype2className(fileentry.type);
     span.appendChild(document.createTextNode(fileentry.name));
     td.appendChild(span);
 
@@ -144,4 +147,7 @@ function TabDownloading(tableId, preferencesDialogOpen)
     FilesTable.update.call(this, fileslist);
   };
 }
-TabDownloading.prototype = FilesTable;
+_priv.TabDownloading.prototype = _priv.FilesTable;
+
+return module
+})(ui || {})

@@ -1,4 +1,8 @@
-function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
+var ui = (function(module, shareit){
+var _priv = module._priv = module._priv || {}
+
+
+_priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 {
   // Tabs
   var div = document.createElement('DIV');
@@ -125,7 +129,7 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     // Show if file have been downloaded previously or if we can transfer it
     if(fileentry.bitmap)
     {
-      var chunks = fileentry.size / chunksize;
+      var chunks = fileentry.size / shareit.chunksize;
       if(chunks % 1 != 0)
          chunks = Math.floor(chunks) + 1;
 
@@ -155,7 +159,7 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var captionCell = spanedCell(table);
+    var captionCell = _priv.spanedCell(table);
     captionCell.appendChild(document.createTextNode('Remote peer is not sharing files.'));
 
 //    var anchor = document.createElement('A')
@@ -187,7 +191,7 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
     // Name & icon
     var span = document.createElement('SPAN');
-        span.className = filetype2className(type);
+        span.className = _priv.filetype2className(type);
         span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
     td.appendChild(span);
 
@@ -219,16 +223,19 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
     {
       // Add folder row
-      prevPath = rowFolder(this.tbody, prevPath, fileentry.path);
+      prevPath = _priv.rowFolder(this.tbody, prevPath, fileentry.path);
 
       // Add file row
       var tr = rowFactory(fileentry);
 
       if(prevPath)
-        tr.setAttribute('class', 'child-of-' + classEscape(prevPath));
+        tr.setAttribute('class', 'child-of-'+_priv.classEscape(prevPath));
 
       this.tbody.appendChild(tr);
     }
   };
 }
-TabPeer.prototype = FilesTable;
+_priv.TabPeer.prototype = _priv.FilesTable;
+
+return module
+})(ui || {}, shareit)

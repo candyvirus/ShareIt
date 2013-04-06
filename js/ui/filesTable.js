@@ -1,7 +1,12 @@
-function filetype2className(filetype) {
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.filetype2className = function(filetype)
+{
   filetype = filetype.split('/');
 
-  switch (filetype[0]) {
+  switch(filetype[0])
+  {
     case 'image':
       return 'image';
     case 'video':
@@ -12,7 +17,7 @@ function filetype2className(filetype) {
   return 'file';
 }
 
-function spanedCell(table)
+_priv.spanedCell = function(table)
 //Creates a cell that span over all the columns of a table
 {
   var td = document.createElement('TD');
@@ -22,16 +27,19 @@ function spanedCell(table)
   return td;
 }
 
-function classEscape(text) {
+_priv.classEscape = function(text)
+{
   return text.replace(/\./g, '_').replace(/ /g, '__').replace(/\//g, '___');
 }
 
-function rowFolder(tbody, prevPath, path) {
-  if (prevPath == path) return prevPath;
+_priv.rowFolder = function(tbody, prevPath, path)
+{
+  if(prevPath == path)
+    return prevPath;
 
   // Folder row
   var tr = document.createElement('TR');
-  tr.id = classEscape(path);
+  tr.id = _priv.classEscape(path);
 
   var td = document.createElement('TD');
   td.colSpan = 2;
@@ -46,7 +54,8 @@ function rowFolder(tbody, prevPath, path) {
   td.appendChild(span);
 
   var path_tokens = path_tokens.slice(0, -1);
-  if (path_tokens.length) tr.setAttribute('class', 'child-of-' + classEscape(path_tokens.join('/')));
+  if(path_tokens.length)
+    tr.setAttribute('class', 'child-of-'+_priv.classEscape(path_tokens.join('/')));
 
   tbody.appendChild(tr);
 
@@ -54,40 +63,54 @@ function rowFolder(tbody, prevPath, path) {
 }
 
 
-var FilesTable = {
+_priv.FilesTable =
+{
   dirty: true,
 
-  update: function(fileslist) {
+  update: function(fileslist)
+  {
     // Remove old table and add new empty one
-    while (this.tbody.firstChild)
+    while(this.tbody.firstChild)
       this.tbody.removeChild(this.tbody.firstChild);
 
-    if (fileslist.length) {
-      fileslist.sort(function(a, b) {
-        function strcmp(str1, str2) {
+    if(fileslist.length)
+    {
+      fileslist.sort(function(a, b)
+      {
+        function strcmp(str1, str2)
+        {
           return ((str1 == str2) ? 0 : ((str1 > str2) ? 1 : -1));
         }
 
         var result = strcmp(a.sharedpoint, b.sharedpoint);
-        if (result) return result;
+        if(result)
+          return result;
 
         var result = strcmp(a.path, b.path);
-        if (result) return result;
+        if(result)
+          return result;
 
         var result = strcmp(a.file ? a.file.name : a.name, b.file ? b.file.name : b.name);
-        if (result) return result;
+        if(result)
+          return result;
       });
 
       this.updateFiles(fileslist);
 
-      $(this.tbody.parentNode).treeTable({
+      $(this.tbody.parentNode).treeTable(
+      {
         initialState: 'expanded'
       });
-    } else {
+    }
+    else
+    {
       var tr = document.createElement('TR');
       tr.appendChild(this.noFilesCaption);
 
       this.tbody.appendChild(tr);
     }
   }
-};
+}
+
+return module
+})(ui || {})
