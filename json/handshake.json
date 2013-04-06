@@ -32,7 +32,7 @@
     [
         "SIP",
         {
-            "outbound_proxy_set": 'ws://192.168.1.33:10080'
+            "outbound_proxy_set": "ws://192.168.1.33:10080"
         }
     ],
     [
