@@ -22,10 +22,11 @@ _priv.DB_init = function(onsuccess)
     // Create an objectStore to hold information about the shared files.
     // We're going to use "hash" as our key path because it's guaranteed to
     // be unique.
-    db.createObjectStore('files',
+    var files = db.createObjectStore('files',
     {
-      keyPath: 'hash'
+      keyPath: ["sharedpoint", "path", "name"]
     });
+    files.createIndex("by_hash", "hash", {unique: false})
   }
 
   var request = indexedDB.open('ShareIt', version);
@@ -296,7 +297,24 @@ _priv.DB_init = function(onsuccess)
      */
     db.files_get = function(key, callback)
     {
-      db._get('files', key, callback);
+//      db._get('files', key, callback);
+
+      var transaction = db.transaction('files', 'readonly');
+      var objectStore = transaction.objectStore('files');
+      var index = objectStore.index("by_hash");
+
+      var request = index.get(key);
+      if(callback)
+      {
+        request.onsuccess = function(event)
+        {
+          callback(null, request.result);
+        };
+        request.onerror = function(event)
+        {
+          callback(event.target.errorCode);
+        };
+      }
     };
 
     /**
