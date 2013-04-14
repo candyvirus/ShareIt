@@ -38,8 +38,9 @@ window.addEventListener('DOMContentLoaded', function()
     cm.show();
 
     // Start loading the webapp
-    var core = new shareit.Local(
-//    var core = new shareit.Remote(new Worker('js/shareit-core/shareit_backend.js'),
+    var core = new shareit.Local('json/handshake.json',
+//    var core = new shareit.Remote(new Worker('js/shareit-core/shareit_backend.js',
+//                                             'json/handshake.json'),
     function(core)
     {
       ui.UI(core)
