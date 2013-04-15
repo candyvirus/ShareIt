@@ -5,71 +5,52 @@ var _priv = module._priv = module._priv || {}
  * Handshake channel connector for SimpleSignaling
  * @param {Object} configuration Configuration object.
  */
-_priv.Handshake_SimpleSignaling = function(configuration)
+_priv.HandshakeManager.registerConstructor('SimpleSignaling',
+function(configuration)
 {
-  _priv.Transport_init(this);
+  EventTarget.call(this);
 
   this.isPubsub = true;
 
   var self = this;
 
   // Connect a handshake channel to the SimpleSignaling server
-  var handshake = new SimpleSignaling(configuration);
+  var connection = new SimpleSignaling(configuration);
 
 
   /**
    * Receive messages
    */
-  handshake.onmessage = function(uid, data)
+  connection.onmessage = function(message)
   {
-    if(self.onmessage)
-       self.onmessage(uid, data);
+    var event = JSON.parse(message.data);
+
+    // Don't try to connect to ourselves
+    if(event.from == configuration.uid)
+      return
+
+    this.dispatchEvent(event);
   };
 
 
   /**
-   * Handle the presence of other new peers
+   * Handle the connection to the handshake server
    */
-  this.addEventListener('presence', function(event)
-  {
-    var uid = event.data[0];
-  
-    // Don't try to connect to ourselves
-    if(uid != configuration.uid)
-    {
-      var event = document.createEvent("Event");
-          event.initEvent('presence',true,true);
-          event.uid = uid
-
-      self.dispatchEvent(event);
-    }
-  });
-
-
-  handshake.onopen = function(uid)
+  connection.onopen = function()
   {
     // Notify our presence
-    self.emit('presence', peersManager.uid);
-
-
-    /**
-     * Send a message to a peer
-     */
-    self.send = function(message, uid)
-    {
-      handshake.send(uid, message);
-    };
+    send({type: 'presence', from: configuration.uid});
 
     // Notify that the connection to this handshake server is open
     if(self.onopen)
-       self.onopen(uid);
+       self.onopen();
   };
 
 
   /**
    * Handle errors on the connection
    */
-  handshake.onerror = function(error)
+  connection.onerror = function(error)
   {
     if(self.onerror)
        self.onerror(error);
@@ -77,41 +58,25 @@ _priv.Handshake_SimpleSignaling = function(configuration)
 
 
   /**
-   * Send a RTCPeerConnection offer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this offer have circulated.
+   * Send a message to a peer
    */
-  this.sendOffer = function(dest, sdp, route)
+  this.send = function(data, uid)
   {
-    if(route == undefined)
-       route = [];
+    data.from = configuration.uid
+    data.to = uid
 
-    route.push(configuration.uid);
-
-    this.emit('offer', dest, sdp, route);
-  };
+    connection.send(JSON.stringify(data));
+  }
 
 
   /**
-   * Send a RTCPeerConnection answer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this answer have circulated.
+   * Close the connection with this handshake server
    */
-  this.sendAnswer = function(orig, sdp, route)
+  this.close = function()
   {
-    // Run over all the route peers looking for possible "shortcuts"
-    for(var i = 0, uid; uid = route[i]; i++)
-      if(uid == transport.uid)
-      {
-        route.length = i;
-        break;
-      }
-
-    this.emit('answer', orig, sdp, route);
-  };
-}
+    connection.close()
+  }
+})
 
 return module
 })(webp2p || {})

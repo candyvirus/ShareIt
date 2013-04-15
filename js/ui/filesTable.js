@@ -27,10 +27,10 @@ _priv.spanedCell = function(table)
   return td;
 }
 
-_priv.classEscape = function(text)
-{
-  return text.replace(/\./g, '_').replace(/ /g, '__').replace(/\//g, '___');
-}
+//_priv.classEscape = function(text)
+//{
+//  return text.replace(/\./g, '_').replace(/ /g, '__').replace(/\//g, '___');
+//}
 
 _priv.rowFolder = function(tbody, prevPath, path)
 {
@@ -39,7 +39,8 @@ _priv.rowFolder = function(tbody, prevPath, path)
 
   // Folder row
   var tr = document.createElement('TR');
-  tr.id = _priv.classEscape(path);
+//  tr.id = _priv.classEscape(path);
+  tr.setAttribute('data-tt-id',path);
 
   var td = document.createElement('TD');
   td.colSpan = 2;
@@ -55,7 +56,8 @@ _priv.rowFolder = function(tbody, prevPath, path)
 
   var path_tokens = path_tokens.slice(0, -1);
   if(path_tokens.length)
-    tr.setAttribute('class', 'child-of-'+_priv.classEscape(path_tokens.join('/')));
+//    tr.setAttribute('class', 'child-of-'+_priv.classEscape(path_tokens.join('/')));
+    tr.setAttribute('data-tt-parent-id',path_tokens.join('/'));
 
   tbody.appendChild(tr);
 
@@ -97,8 +99,9 @@ _priv.FilesTable =
 
       this.updateFiles(fileslist);
 
-      $(this.tbody.parentNode).treeTable(
+      $(this.tbody.parentNode).treetable(
       {
+        expandable: true,
         initialState: 'expanded'
       });
     }

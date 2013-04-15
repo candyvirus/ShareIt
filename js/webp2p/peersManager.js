@@ -11,7 +11,7 @@ var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection || mozRTCPe
  * @param {String} [stun_server="stun.l.google.com:19302"] URL of the server
  * used for the STUN communications.
  */
-module.PeersManager = function(stun_server)
+module.PeersManager = function(handshake_servers_file, stun_server)
 {
   // Set a default STUN server if none is specified
   if(stun_server == undefined)
@@ -48,6 +48,9 @@ module.PeersManager = function(stun_server)
     });
     pc.onstatechange = function(event)
     {
+      console.warn("PeerConnection "+event.target.readyState)
+      console.warn("PeerConnection "+event.target.iceConnectionState)
+
       // Remove the peer from the list of peers when gets closed
       if(event.target.readyState == 'closed')
         delete peers[uid];
@@ -67,7 +70,6 @@ module.PeersManager = function(stun_server)
 
     pc._channel = channel;
 
-    _priv.Transport_init(channel);
     _priv.Transport_Routing_init(channel, self);
 
     channel.onclose = function()
@@ -82,8 +84,6 @@ module.PeersManager = function(stun_server)
         event.channel = channel
 
     self.dispatchEvent(event);
-
-//    Transport_Search_init(channel, db, self);
   }
 
 
@@ -146,7 +146,7 @@ module.PeersManager = function(stun_server)
   };
 
   // Init handshake manager
-  var handshakeManager = new _priv.HandshakeManager('json/handshake.json', this);
+  var handshakeManager = new _priv.HandshakeManager(handshake_servers_file, this);
   handshakeManager.onerror = function(error)
   {
     console.error(error);

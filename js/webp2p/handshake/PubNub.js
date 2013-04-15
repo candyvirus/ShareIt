@@ -5,7 +5,8 @@ var _priv = module._priv = module._priv || {}
  * Handshake channel connector for PubNub (adapter to Message Channel interface)
  * @param {Object} configuration Configuration object.
  */
-_priv.Handshake_PubNub = function(configuration)
+_priv.HandshakeManager.registerConstructor('PubNub',
+function(configuration)
 {
   EventTarget.call(this);
 
@@ -64,12 +65,15 @@ _priv.Handshake_PubNub = function(configuration)
   /**
    * Send a message to a peer
    */
-  function send(message)
+  this.send = function(data, uid)
   {
+    data.from = configuration.uid
+    data.to = uid
+
     pubnub.publish(
     {
       channel: configuration.channel,
-      message: JSON.stringify(message)
+      message: JSON.stringify(data)
     });
   };
 
@@ -84,53 +88,7 @@ _priv.Handshake_PubNub = function(configuration)
       channel: configuration.channel
     });
   }
-
-
-  /**
-   * Send a RTCPeerConnection answer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this answer have circulated.
-   */
-  this.sendAnswer = function(orig, sdp, route)
-  {
-    var data = {type: 'answer',
-                from: configuration.uid,
-                to:   orig,
-                sdp:  sdp,
-                route: route}
-
-//    // Run over all the route peers looking for possible "shortcuts"
-//    for(var i = 0, uid; uid = route[i]; i++)
-//      if(uid == transport.uid)
-//      {
-//        data.route.length = i;
-//        break;
-//      }
-
-    send(data);
-  };
-
-
-  /**
-   * Send a RTCPeerConnection offer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this offer have circulated.
-   */
-  this.sendOffer = function(dest, sdp, route)
-  {
-    var data = {type: 'offer',
-                from: configuration.uid,
-                to:   dest,
-                sdp:  sdp}
-
-    if(route)
-       data.route = route;
-
-    send(data);
-  };
-}
+})
 
 return module
 })(webp2p || {})

@@ -5,7 +5,8 @@ var _priv = module._priv = module._priv || {}
  * Signaling channel connector for XMPP
  * @param {Object} configuration Configuration object
  */
-_priv.Handshake_XMPP = function(configuration)
+_priv.HandshakeManager.registerConstructor('XMPP',
+function(configuration)
 {
   EventTarget.call(this);
 
@@ -24,18 +25,18 @@ _priv.Handshake_XMPP = function(configuration)
   connection.registerHandler('message', function(message)
   {
     var from = message.getFromJID().getResource()
-    var body = JSON.parse(message.getBody())
 
     // Don't try to connect to ourselves
     if(from == configuration.uid)
       return
 
-    var event = document.createEvent("Event");
-        event.initEvent(body[0],true,true);
+    var body = message.getBody()
+    if(body == "")
+      return
 
-        event.from  = from
-        event.sdp   = body[1]
-        event.route = body[2]
+    var event = JSON.parse(body)
+
+    event.from = from
 
     self.dispatchEvent(event);
   })
@@ -98,11 +99,11 @@ _priv.Handshake_XMPP = function(configuration)
   /**
    * Send a message to a peer
    */
-  function send(message, uid)
+  this.send = function(data, uid)
   {
     var oMsg = new JSJaCMessage();
         oMsg.setTo(configuration.room+"/"+uid);
-        oMsg.setBody(JSON.stringify(message));
+        oMsg.setBody(JSON.stringify(data));
 
     connection.send(oMsg);
   }
@@ -115,39 +116,7 @@ _priv.Handshake_XMPP = function(configuration)
   {
     connection.disconnect()
   }
-
-
-  /**
-   * Send a RTCPeerConnection answer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this answer have circulated.
-   */
-  this.sendAnswer = function(uid, sdp, route)
-  {
-    var data = ['answer', sdp]
-    if(route)
-      data.push(route)
-
-    send(data, uid)
-  }
-
-
-  /**
-   * Send a RTCPeerConnection offer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this offer have circulated.
-   */
-  this.sendOffer = function(uid, sdp, route)
-  {
-    var data = ['offer', sdp]
-    if(route)
-      data.push(route)
-
-    send(data, uid)
-  }
-}
+})
 
 return module
 })(webp2p || {})
