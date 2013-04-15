@@ -37,6 +37,7 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
 
   function rowFactory(fileentry) {
     var tr = document.createElement('TR');
+    tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
 
     var td = document.createElement('TD');
     tr.appendChild(td);
@@ -78,7 +79,8 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
   {
     // Sharedpoint row
     var tr = document.createElement('TR');
-    tr.id = _priv.classEscape(sharedpoint);
+//    tr.id = _priv.classEscape(sharedpoint);
+    tr.setAttribute('data-tt-id',sharedpoint);
 
     var td = document.createElement('TD');
     td.colSpan = 2;
@@ -130,7 +132,8 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
         if(prevPath)
           sharedpoint = prevPath;
 
-        tr.setAttribute('class', 'child-of-' + _priv.classEscape(sharedpoint));
+//        tr.setAttribute('class', 'child-of-' + _priv.classEscape(sharedpoint));
+        tr.setAttribute('data-tt-parent-id',sharedpoint);
       }
 
       this.tbody.appendChild(tr);

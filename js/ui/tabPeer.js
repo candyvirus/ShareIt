@@ -229,7 +229,8 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
       var tr = rowFactory(fileentry);
 
       if(prevPath)
-        tr.setAttribute('class', 'child-of-'+_priv.classEscape(prevPath));
+//        tr.setAttribute('class', 'child-of-'+_priv.classEscape(prevPath));
+        tr.setAttribute('data-tt-parent-id',prevPath);
 
       this.tbody.appendChild(tr);
     }
