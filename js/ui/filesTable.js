@@ -101,6 +101,7 @@ _priv.FilesTable =
 
       $(this.tbody.parentNode).treetable(
       {
+        expandable: true,
         initialState: 'expanded'
       });
     }
