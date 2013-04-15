@@ -183,6 +183,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   function rowFactory(fileentry)
   {
     var tr = document.createElement('TR');
+    tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
 
     var td = document.createElement('TD');
     tr.appendChild(td);

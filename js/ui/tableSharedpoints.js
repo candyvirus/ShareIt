@@ -43,6 +43,7 @@ _priv.TableSharedpoints = function(tableId, onclickFactory)
   function rowFactory(fileentry)
   {
     var tr = document.createElement('TR');
+    tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
 
     var td = document.createElement('TD');
     tr.appendChild(td);
