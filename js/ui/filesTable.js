@@ -104,6 +104,19 @@ _priv.FilesTable =
         expandable: true,
         initialState: 'expanded'
       });
+
+      $.extend($.expr[':'],  // jQuery selector plugin to add :prev
+      {
+        prev: function(a)
+        {
+          return $(a).prev();
+        }
+      });
+      $(this).accordion(
+      {
+        collapsible: true,
+        header: "tbody > div :prev"
+      });
     }
     else
     {

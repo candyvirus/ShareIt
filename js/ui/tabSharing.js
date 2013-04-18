@@ -88,7 +88,7 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
 
     // Sharedpoint name & icon
     var span = document.createElement('SPAN');
-    //            span.className = fileentry.sharedpoint.type
+//        span.className = fileentry.sharedpoint.type
     span.appendChild(document.createTextNode(sharedpoint));
     td.appendChild(span);
 
@@ -137,6 +137,23 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
       }
 
       this.tbody.appendChild(tr);
+
+      // Add duplicates (if any)
+      if(fileentry.duplicates)
+      {
+        var ul = document.createElement('UL');
+
+        for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
+        {
+          var il = document.createElement('IL');
+
+          il.appendChild(document.createTextNode(duplicate));
+
+          ul.appendChild(il);
+        }
+
+        this.tbody.appendChild(ul);
+      }
     }
   };
 }
