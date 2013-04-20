@@ -32,36 +32,33 @@ _priv.spanedCell = function(table)
 //  return text.replace(/\./g, '_').replace(/ /g, '__').replace(/\//g, '___');
 //}
 
-_priv.rowFolder = function(tbody, prevPath, path)
+_priv.rowFolder = function(path)
 {
-  if(prevPath == path)
-    return prevPath;
-
   // Folder row
   var tr = document.createElement('TR');
-//  tr.id = _priv.classEscape(path);
-  tr.setAttribute('data-tt-id',path);
+//      tr.id = _priv.classEscape(path);
+      tr.setAttribute('data-tt-id',path);
+
+  // Split full path in path and name
+  var path = path.split('/');
+  var name = path.slice(-1)
+  path = path.slice(0, -1).join('/');
+
+  // Set the parent of the folder
+  if(path)
+    tr.setAttribute('data-tt-parent-id',path);
 
   var td = document.createElement('TD');
-  td.colSpan = 2;
+      td.colSpan = 2;
   tr.appendChild(td);
 
-  var path_tokens = path.split('/');
-
-  // Folder name & icon
+  // Name & icon
   var span = document.createElement('SPAN');
-  span.className = 'folder';
-  span.appendChild(document.createTextNode(path_tokens.slice(-1)));
+      span.className = 'folder';
+      span.appendChild(document.createTextNode(name));
   td.appendChild(span);
 
-  var path_tokens = path_tokens.slice(0, -1);
-  if(path_tokens.length)
-//    tr.setAttribute('class', 'child-of-'+_priv.classEscape(path_tokens.join('/')));
-    tr.setAttribute('data-tt-parent-id',path_tokens.join('/'));
-
-  tbody.appendChild(tr);
-
-  return path;
+  return tr;
 }
 
 
@@ -105,18 +102,14 @@ _priv.FilesTable =
         initialState: 'expanded'
       });
 
-      $.extend($.expr[':'],  // jQuery selector plugin to add :prev
-      {
-        prev: function(a)
-        {
-          return $(a).prev();
-        }
-      });
-      $(this).accordion(
-      {
-        collapsible: true,
-        header: "tbody > div :prev"
-      });
+//      $(this.tbody.parentNode).accordion(
+//      {
+//        active: false,
+//        collapsible: true,
+//        header: "td > span:last-of-type",
+//        heightStyle: "content",
+//        icons: false
+//      })
     }
     else
     {
