@@ -153,6 +153,8 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
       // Duplicates
       if(fileentry.duplicates)
       {
+        tr_file.setAttribute('data-tt-initialState', "collapsed");
+
         var tr = document.createElement('TR');
             tr.setAttribute('data-tt-id', "");
             tr.setAttribute('data-tt-parent-id', parent+"/"+fileentry.name);
