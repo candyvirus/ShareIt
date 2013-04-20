@@ -27,16 +27,10 @@ _priv.spanedCell = function(table)
   return td;
 }
 
-//_priv.classEscape = function(text)
-//{
-//  return text.replace(/\./g, '_').replace(/ /g, '__').replace(/\//g, '___');
-//}
-
 _priv.rowFolder = function(path)
 {
   // Folder row
   var tr = document.createElement('TR');
-//      tr.id = _priv.classEscape(path);
       tr.setAttribute('data-tt-id',path);
 
   // Split full path in path and name
@@ -101,15 +95,6 @@ _priv.FilesTable =
         expandable: true,
         initialState: 'expanded'
       });
-
-//      $(this.tbody.parentNode).accordion(
-//      {
-//        active: false,
-//        collapsible: true,
-//        header: "td > span:last-of-type",
-//        heightStyle: "content",
-//        icons: false
-//      })
     }
     else
     {

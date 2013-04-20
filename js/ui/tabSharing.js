@@ -39,7 +39,6 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
   {
     // Sharedpoint row
     var tr = document.createElement('TR');
-//        tr.id = _priv.classEscape(sharedpoint);
         tr.setAttribute('data-tt-id',sharedpoint);
 
     var td = document.createElement('TD');
