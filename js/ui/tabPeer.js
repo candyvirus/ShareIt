@@ -180,24 +180,22 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFileentry(fileentry, parent)
+  function rowFileentry(fileentry)
   {
     var tr = document.createElement('TR');
-    tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
-
-    if(parent)
-      tr.setAttribute('data-tt-parent-id',parent);
+    tr.setAttribute('data-tt-id', "");  // Hack for TreeTable
 
     var td = document.createElement('TD');
     tr.appendChild(td);
 
-    var type = (fileentry.type != undefined) ? fileentry.type : fileentry.file.type;
+    var blob = fileentry.file || fileentry.blob || fileentry;
+
+    var type = blob.type;
 
     // Name & icon
     var span = document.createElement('SPAN');
         span.className = _priv.filetype2className(type);
         span.appendChild(document.createTextNode(fileentry.name));
-//        span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
     td.appendChild(span);
 
     // Type
@@ -206,7 +204,8 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
     tr.appendChild(td);
 
     // Size
-    var size = (fileentry.size != undefined) ? fileentry.size : fileentry.file.size;
+    var size = blob.size;
+
     var td = document.createElement('TD');
         td.className = 'filesize';
         td.appendChild(document.createTextNode(humanize.filesize(size)));
@@ -238,12 +237,19 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
       }
 
       // Fileentry
-      var tr_file = rowFileentry(fileentry, prevPath);
+      var tr_file = rowFileentry(fileentry);
       this.tbody.appendChild(tr_file);
+
+      if(prevPath)
+        tr_file.setAttribute('data-tt-parent-id', prevPath);
 
       // Duplicates
       if(fileentry.duplicates)
       {
+        tr_file.setAttribute('data-tt-id', prevPath
+                                         ? prevPath+"/"+fileentry.name
+                                         : fileentry.name);
+
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
         var tr = document.createElement('TR');

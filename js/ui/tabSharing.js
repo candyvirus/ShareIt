@@ -54,16 +54,11 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
     return tr
   }
 
-  function rowFileentry(fileentry, parent)
+  function rowFileentry(fileentry)
   {
-    var id = parent ? parent+"/"+fileentry.name : fileentry.name
-
     // Fileentry row
     var tr = document.createElement('TR');
-        tr.setAttribute('data-tt-id', id);
-
-    if(parent)
-      tr.setAttribute('data-tt-parent-id', parent);
+        tr.setAttribute('data-tt-id', "");  // Hack for TreeTable
 
     var td = document.createElement('TD');
     tr.appendChild(td);
@@ -146,12 +141,19 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
           parent = sharedpoint
       }
 
-      var tr_file = rowFileentry(fileentry, parent)
+      var tr_file = rowFileentry(fileentry)
       this.tbody.appendChild(tr_file);
+
+      if(parent)
+        tr_file.setAttribute('data-tt-parent-id', parent);
 
       // Duplicates
       if(fileentry.duplicates)
       {
+        tr_file.setAttribute('data-tt-id', parent
+                                         ? parent+"/"+fileentry.name
+                                         : fileentry.name);
+
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
         var tr = document.createElement('TR');
