@@ -148,9 +148,9 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
     {
       div.progressbar(value);
     });
-    $(self).on(fileentry.hash + '.end', function(event)
+    $(self).on(fileentry.hash + '.end', function(event, blob)
     {
-      div.open(fileentry.blob);
+      div.open(blob);
     });
 
     return div;

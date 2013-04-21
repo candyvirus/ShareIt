@@ -224,7 +224,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
       {
         var fileentry = event.fileentry;
 
-        $(tabPeer).trigger(fileentry.hash + '.end');
+        $(tabPeer).trigger(fileentry.hash + '.end', [fileentry.blob]);
       });
 
       // Get notified when this channel files list is updated
