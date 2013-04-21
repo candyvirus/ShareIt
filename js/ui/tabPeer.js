@@ -180,10 +180,13 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFactory(fileentry)
+  function rowFileentry(fileentry, parent)
   {
     var tr = document.createElement('TR');
     tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
+
+    if(parent)
+      tr.setAttribute('data-tt-parent-id',parent);
 
     var td = document.createElement('TD');
     tr.appendChild(td);
@@ -193,7 +196,8 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
     // Name & icon
     var span = document.createElement('SPAN');
         span.className = _priv.filetype2className(type);
-        span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
+        span.appendChild(document.createTextNode(fileentry.name));
+//        span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
     td.appendChild(span);
 
     // Type
@@ -223,17 +227,40 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
     for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
     {
-      // Add folder row
-      prevPath = _priv.rowFolder(this.tbody, prevPath, fileentry.path);
+      // Folder
+      var path = fileentry.path;
 
-      // Add file row
-      var tr = rowFactory(fileentry);
+      if(path && prevPath != path)
+      {
+        prevPath = path;
 
-      if(prevPath)
-//        tr.setAttribute('class', 'child-of-'+_priv.classEscape(prevPath));
-        tr.setAttribute('data-tt-parent-id',prevPath);
+        this.tbody.appendChild(_priv.rowFolder(path));
+      }
 
-      this.tbody.appendChild(tr);
+      // Fileentry
+      var tr_file = rowFileentry(fileentry, prevPath);
+      this.tbody.appendChild(tr_file);
+
+      // Duplicates
+      if(fileentry.duplicates)
+      {
+        tr_file.setAttribute('data-tt-initialState', "collapsed");
+
+        var tr = document.createElement('TR');
+            tr.setAttribute('data-tt-id', "");
+            tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
+
+        for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
+        {
+          var td = document.createElement('TD');
+
+          td.appendChild(document.createTextNode(duplicate));
+
+          tr.appendChild(td);
+        }
+
+        this.tbody.appendChild(tr);
+      }
     }
   };
 }
