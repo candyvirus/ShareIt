@@ -90,11 +90,22 @@ _priv.FilesTable =
 
       this.updateFiles(fileslist);
 
+      $(this.tbody.parentNode).treetable("destroy")
       $(this.tbody.parentNode).treetable(
       {
         expandable: true,
         initialState: 'expanded'
       });
+      $(this.tbody).find("tr").mouseover(function()
+      {
+        $("tr.mouseover").removeClass("mouseover");
+        $(this).addClass("mouseover");
+      })
+      $(this.tbody).find("tr").mousedown(function()
+      {
+        $("tr.selected").removeClass("selected");
+        $(this).addClass("selected");
+      })
     }
     else
     {
