@@ -164,7 +164,26 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
         {
           var td = document.createElement('TD');
 
-          td.appendChild(document.createTextNode(duplicate));
+          var fullpath = ""
+
+          // Sharedpoint
+          if(duplicate.sharedpoint)
+            fullpath += duplicate.sharedpoint
+
+          // Path
+          if(duplicate.path)
+          {
+            if(fullpath)
+               fullpath += '/'
+            fullpath += duplicate.path
+          }
+
+          // Name
+          if(fullpath)
+             fullpath += '/'
+          fullpath += duplicate.name
+
+          td.appendChild(document.createTextNode(fullpath));
 
           tr.appendChild(td);
         }
