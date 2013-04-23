@@ -132,10 +132,116 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   tabs.on('tabsbeforeactivate', tabsbeforeactivate)
   $(document).live('pagebeforehide', tabsbeforeactivate)
 
-  // Peers tabs
-  this.openOrCreatePeer = function(uid, preferencesDialogOpen, shareit, channel)
+  function createTab(caption, onclose)
   {
-    var tabPanelId = '#' + tabsId + '-' + uid;
+    // Tab
+    var li = document.createElement('LI');
+
+    var a = document.createElement('A');
+        a.href = tabPanelId;
+        a.appendChild(document.createTextNode(caption));
+    li.appendChild(a);
+
+    var span = document.createElement('SPAN');
+        span.setAttribute('class', 'ui-icon ui-icon-closethick');
+        span.appendChild(document.createTextNode('Remove Tab'));
+        span.onclick = function()
+        {
+          if(onclose)
+            onclose()
+
+          // Remove the tab
+          var index = $('#ui-corner-top', tabs).index($(this).parent());
+          tabs.find('.ui-tabs-nav li:eq(' + index + ')').remove();
+
+          // Remove the panel
+          $(tabPanelId).remove();
+
+          // If there are no more peer/search tabs, check if we are sharing or
+          // downloading a file and if not, show again the Home screen
+          var disabled = $('#' + tabsId).tabs('option', 'disabled');
+//          if(!index && disabled.length == 2)
+          if(disabled.length == 2)
+          {
+            $('#' + tabsId).tabs('option', 'collapsible', true);
+            $('#Home-tab').appendTo('#' + tabsId);
+          }
+
+          // Refresh the tabs widget
+          if(!$.mobile)
+            tabs.tabs('refresh');
+        }
+    li.appendChild(span);
+
+    $(li).appendTo('#' + tabsId + ' .ui-tabs-nav');
+
+    // Tab panel
+    if($.mobile)
+      $('#Home ul').listview('refresh');
+  }
+
+  function beginTransfer(fileentry)
+  {
+    return function()
+    {
+      policy(function()
+      {
+        // Begin transfer of file
+        shareit.transfer_begin(fileentry);
+
+        // Don't buble click event
+        return false;
+      });
+    }
+  }
+
+  function createPeer(tabPanelId, uid, channel)
+  {
+    // Tab
+    createTab('UID: ' + uid, function()
+    {
+      channel.fileslist_disableUpdates();
+    })
+
+    // Tab panel
+    var tabPeer = new _priv.TabPeer(uid, tabsId, preferencesDialogOpen,
+                                    beginTransfer);
+
+    // Get notified when this channel files list is updated
+    // and update the UI peer files table
+    channel.addEventListener('fileslist._updated', function(event)
+    {
+      var fileslist = event.fileslist;
+
+      tabPeer.update(fileslist);
+    });
+
+    // Request the peer's files list
+    var SEND_UPDATES = 1;
+//    var SMALL_FILES_ACCELERATOR = 2
+    var flags = SEND_UPDATES;
+//    if()
+//      flags |= SMALL_FILES_ACCELERATOR
+    channel.fileslist_query(flags);
+
+    return tabPeer
+  }
+
+  function createSearch(tabPanelId, query)
+  {
+    // Tab
+    createTab('Search: ' + query)
+
+    // Tab panel
+    var tabSearch = new _priv.TabSearch(query, tabsId, beginTransfer)
+
+    return tabSearch
+  }
+
+  // Peers tabs
+  this.openOrCreate = function(type, data, shareit, channel)
+  {
+    var tabPanelId = '#' + tabsId + '-' + data;
 
     // Get index of the peer tab
     var index = tabs.find('table').index($(tabPanelId));
@@ -147,102 +253,42 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
     // Peer tab don't exists, create it
     else
     {
-      // Tab
-      var li = document.createElement('LI');
+      var tab
 
-      var a = document.createElement('A');
-          a.href = tabPanelId;
-          a.appendChild(document.createTextNode('UID: ' + uid));
-      li.appendChild(a);
-
-      var span = document.createElement('SPAN');
-          span.setAttribute('class', 'ui-icon ui-icon-closethick');
-          span.appendChild(document.createTextNode('Remove Tab'));
-          span.onclick = function()
-          {
-            channel.fileslist_disableUpdates();
-
-            // Remove the tab
-            var index = $('#ui-corner-top', tabs).index($(this).parent());
-            tabs.find('.ui-tabs-nav li:eq(' + index + ')').remove();
-
-            // Remove the panel
-            $(tabPanelId).remove();
-
-            // If there are no more peer/search tabs, check if we are sharing or
-            // downloading a file and if not, show again the Home screen
-            var disabled = $('#' + tabsId).tabs('option', 'disabled');
-//            if(!index && disabled.length == 2)
-            if(disabled.length == 2)
-            {
-              $('#' + tabsId).tabs('option', 'collapsible', true);
-              $('#Home-tab').appendTo('#' + tabsId);
-            }
-
-            // Refresh the tabs widget
-            if(!$.mobile)
-              tabs.tabs('refresh');
-          };
-      li.appendChild(span);
-
-      $(li).appendTo('#' + tabsId + ' .ui-tabs-nav');
-
-      // Tab panel
-      if($.mobile)
-        $('#Home ul').listview('refresh');
-
-      var tabPeer = new _priv.TabPeer(uid, tabsId, preferencesDialogOpen,
-      function(fileentry)
+      switch(type)
       {
-        return function()
-        {
-          policy(function()
-          {
-            // Begin transfer of file
-            shareit.transfer_begin(fileentry);
+        case 'peer':
+          tab = createPeer(tabPanelId, data, channel)
+          break
 
-            // Don't buble click event
-            return false;
-          });
-        }
-      });
+        case 'search':
+          tab = createSearch(tabPanelId, data)
+          break
+
+        default:
+          console.error('Undefined tab type: '+type)
+          return
+      }
 
       shareit.addEventListener('transfer.begin', function(event)
       {
         var fileentry = event.fileentry;
 
-        $(tabPeer).trigger(fileentry.hash + '.begin');
+        $(tab).trigger(fileentry.hash + '.begin');
       });
       shareit.addEventListener('transfer.update', function(event)
       {
         var fileentry = event.fileentry;
         var value = event.value;
 
-        $(tabPeer).trigger(fileentry.hash + '.update', [value]);
+        $(tab).trigger(fileentry.hash + '.update', [value]);
       });
       shareit.addEventListener('transfer.end', function(event)
       {
         var fileentry = event.fileentry;
 
-        $(tabPeer).trigger(fileentry.hash + '.end', [fileentry.blob]);
+        $(tab).trigger(fileentry.hash + '.end', [fileentry.blob]);
       });
-
-      // Get notified when this channel files list is updated
-      // and update the UI peer files table
-      channel.addEventListener('fileslist._updated', function(event)
-      {
-        var fileslist = event.fileslist;
-
-        tabPeer.update(fileslist);
-      });
-
-      // Request the peer's files list
-      var SEND_UPDATES = 1;
-//      var SMALL_FILES_ACCELERATOR = 2
-      var flags = SEND_UPDATES;
-//      if()
-//        flags |= SMALL_FILES_ACCELERATOR
-      channel.fileslist_query(flags);
     }
   };
 

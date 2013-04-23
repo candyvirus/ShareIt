@@ -86,8 +86,7 @@ module.UI = function(shareit)
           if(error)
             console.error(error);
           else
-            tabsMain.openOrCreatePeer(uid, dialogConfig.preferencesDialogOpen,
-                                      shareit, channel);
+            tabsMain.openOrCreate('peer', uid, shareit, channel);
         });
       }
     }
