@@ -235,6 +235,12 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
     // Tab panel
     var tabSearch = new _priv.TabSearch(query, tabsId, beginTransfer)
 
+    shareit.searchEngine_search(query, function(error, fileslist)
+    {
+      console.log(fileslist)
+      tabSearch.update(fileslist)
+    })
+
     return tabSearch
   }
 
