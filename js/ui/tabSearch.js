@@ -70,6 +70,12 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
   tr.appendChild(th);
 
   var th = document.createElement('TH');
+    th.scope = 'col';
+    th.abbr = 'Copies';
+    th.appendChild(document.createTextNode('Copies'));
+  tr.appendChild(th);
+
+  var th = document.createElement('TH');
       th.scope = 'col';
       th.abbr = 'Action';
       th.appendChild(document.createTextNode('Action'));
@@ -82,7 +88,7 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
   this.tbody.appendChild(tr);
 
   var td = document.createElement('TD');
-      td.colSpan = 4;
+      td.colSpan = 6;
       td.align = 'center';
       td.appendChild(document.createTextNode('Searching...'));
   tr.appendChild(td);
@@ -137,6 +143,11 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
         td.appendChild(document.createTextNode(fileentry.score.toFixed(2)));
     tr.appendChild(td);
 
+    // Copies
+    var td = document.createElement('TD');
+        td.appendChild(document.createTextNode(1 + fileentry.duplicates.length));
+    tr.appendChild(td);
+
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
@@ -169,7 +180,7 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
         {
           var td = document.createElement('TD');
 
-          td.colSpan = 5
+          td.colSpan = 6
           td.appendChild(document.createTextNode(duplicate.name));
 
           tr.appendChild(td);
