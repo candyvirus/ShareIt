@@ -195,12 +195,16 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
     }
   }
 
-  function createPeer(tabPanelId, uid, channel)
+  function createPeer(tabPanelId, uid)
   {
     // Tab
     createTab(tabPanelId, 'UID: ' + uid, function()
     {
-      channel.fileslist_disableUpdates();
+      shareit.fileslist_disableUpdates(uid, function(error)
+      {
+        if(error)
+          console.error(error)
+      });
     })
 
     // Tab panel
@@ -209,11 +213,12 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 
     // Get notified when this channel files list is updated
     // and update the UI peer files table
-    channel.addEventListener('fileslist._updated', function(event)
+    shareit.addEventListener('fileslist.updated', function(event)
     {
       var fileslist = event.fileslist;
 
-      tabPeer.update(fileslist);
+      if(uid == event.uid)
+        tabPeer.update(fileslist);
     });
 
     // Request the peer's files list
@@ -222,7 +227,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
     var flags = SEND_UPDATES;
 //    if()
 //      flags |= SMALL_FILES_ACCELERATOR
-    channel.fileslist_query(flags);
+    shareit.fileslist_query(uid, flags);
 
     return tabPeer
   }
@@ -247,7 +252,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   }
 
   // Peers tabs
-  this.openOrCreate = function(type, data, channel)
+  this.openOrCreate = function(type, data)
   {
     var tabPanelId = '#' + tabsId + '-' + data;
 
@@ -266,7 +271,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
       switch(type)
       {
         case 'peer':
-          tab = createPeer(tabPanelId, data, channel)
+          tab = createPeer(tabPanelId, data)
           break
 
         case 'search':

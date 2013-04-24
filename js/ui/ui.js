@@ -86,7 +86,7 @@ module.UI = function(shareit)
           if(error)
             console.error(error);
           else
-            tabsMain.openOrCreate('peer', uid, channel);
+            tabsMain.openOrCreate('peer', uid);
         });
       }
     }

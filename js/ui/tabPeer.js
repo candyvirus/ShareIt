@@ -142,7 +142,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
-        td.appendChild(_priv.buttonFactory(self, fileentry));
+        td.appendChild(_priv.buttonFactory(self, fileentry, onclickFactory));
     tr.appendChild(td);
 
     return tr;
@@ -181,13 +181,13 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
         var tr = document.createElement('TR');
-            td.colSpan = 4
             tr.setAttribute('data-tt-id', "");
             tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
 
         for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
         {
           var td = document.createElement('TD');
+              td.colSpan = 4
 
           var fullpath = ""
 

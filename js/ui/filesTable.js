@@ -1,7 +1,7 @@
 var ui = (function(module){
 var _priv = module._priv = module._priv || {}
 
-_priv.buttonFactory = function(self, fileentry)
+_priv.buttonFactory = function(self, fileentry, onclickFactory)
 {
   var div = document.createElement('DIV');
   div.id = fileentry.hash;

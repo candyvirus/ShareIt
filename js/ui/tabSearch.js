@@ -140,7 +140,7 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
-        td.appendChild(_priv.buttonFactory(self, fileentry));
+        td.appendChild(_priv.buttonFactory(self, fileentry, onclickFactory));
     tr.appendChild(td);
 
     return tr;
