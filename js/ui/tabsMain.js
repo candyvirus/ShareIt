@@ -132,7 +132,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   tabs.on('tabsbeforeactivate', tabsbeforeactivate)
   $(document).live('pagebeforehide', tabsbeforeactivate)
 
-  function createTab(caption, onclose)
+  function createTab(tabPanelId, caption, onclose)
   {
     // Tab
     var li = document.createElement('LI');
@@ -198,7 +198,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   function createPeer(tabPanelId, uid, channel)
   {
     // Tab
-    createTab('UID: ' + uid, function()
+    createTab(tabPanelId, 'UID: ' + uid, function()
     {
       channel.fileslist_disableUpdates();
     })
@@ -230,7 +230,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   function createSearch(tabPanelId, query)
   {
     // Tab
-    createTab('Search: ' + query)
+    createTab(tabPanelId, 'Search: ' + query)
 
     // Tab panel
     var tabSearch = new _priv.TabSearch(query, tabsId, beginTransfer)
@@ -239,7 +239,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
   }
 
   // Peers tabs
-  this.openOrCreate = function(type, data, shareit, channel)
+  this.openOrCreate = function(type, data, channel)
   {
     var tabPanelId = '#' + tabsId + '-' + data;
 

@@ -86,7 +86,7 @@ module.UI = function(shareit)
           if(error)
             console.error(error);
           else
-            tabsMain.openOrCreate('peer', uid, shareit, channel);
+            tabsMain.openOrCreate('peer', uid, channel);
         });
       }
     }
@@ -106,6 +106,20 @@ module.UI = function(shareit)
 
   $('#ConnectUser').click(ConnectUser);
   $('#ConnectUser2').click(ConnectUser);
+
+
+  $('#search input').keypress(function(event)
+  {
+    if(event.keyCode == 13)
+    {
+      var query = $(this).val()
+      if(query)
+      {
+        tabsMain.openOrCreate('search', query);
+        $(this).val("")
+      }
+    }
+  });
 
 
   /**
