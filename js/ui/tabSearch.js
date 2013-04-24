@@ -90,78 +90,6 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
 
   var self = this;
 
-  function buttonFactory(fileentry)
-  {
-    var div = document.createElement('DIV');
-    div.id = fileentry.hash;
-
-    div.transfer = function()
-    {
-      var transfer = document.createElement('A');
-      transfer.onclick = onclickFactory(fileentry);
-      transfer.appendChild(document.createTextNode('Transfer'));
-
-      while (div.firstChild)
-        div.removeChild(div.firstChild);
-      div.appendChild(transfer);
-    };
-
-    div.progressbar = function(value)
-    {
-      if (value == undefined) value = 0;
-
-      var progress = document.createTextNode(Math.floor(value * 100) + '%');
-
-      while(div.firstChild)
-        div.removeChild(div.firstChild);
-      div.appendChild(progress);
-    };
-
-    div.open = function(blob)
-    {
-      var open = document.createElement('A');
-      open.href = window.URL.createObjectURL(blob);
-      open.target = '_blank';
-      open.appendChild(document.createTextNode('Open'));
-
-      while(div.firstChild)
-      {
-        window.URL.revokeObjectURL(div.firstChild.href);
-        div.removeChild(div.firstChild);
-      }
-      div.appendChild(open);
-    };
-
-    // Show if file have been downloaded previously or if we can transfer it
-    if(fileentry.bitmap)
-    {
-      var chunks = fileentry.size / shareit.chunksize;
-      if(chunks % 1 != 0)
-         chunks = Math.floor(chunks) + 1;
-
-      div.progressbar(fileentry.bitmap.indexes(true).length / chunks);
-    }
-    else if(fileentry.blob)
-      div.open(fileentry.blob);
-    else
-      div.transfer();
-
-    $(self).on(fileentry.hash + '.begin', function(event)
-    {
-      div.progressbar();
-    });
-    $(self).on(fileentry.hash + '.update', function(event, value)
-    {
-      div.progressbar(value);
-    });
-    $(self).on(fileentry.hash + '.end', function(event, blob)
-    {
-      div.open(blob);
-    });
-
-    return div;
-  }
-
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
@@ -212,7 +140,7 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
-        td.appendChild(buttonFactory(fileentry));
+        td.appendChild(_priv.buttonFactory(self, fileentry));
     tr.appendChild(td);
 
     return tr;

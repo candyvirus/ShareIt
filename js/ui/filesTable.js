@@ -1,6 +1,81 @@
 var ui = (function(module){
 var _priv = module._priv = module._priv || {}
 
+_priv.buttonFactory = function(self, fileentry)
+{
+  var div = document.createElement('DIV');
+  div.id = fileentry.hash;
+
+  div.transfer = function()
+  {
+    var transfer = document.createElement('A');
+    transfer.onclick = onclickFactory(fileentry);
+    transfer.appendChild(document.createTextNode('Transfer'));
+
+    while(div.firstChild)
+      div.removeChild(div.firstChild);
+    div.appendChild(transfer);
+  };
+
+  div.progressbar = function(value)
+  {
+    if(value == undefined)
+       value = 0;
+
+    var progress = document.createTextNode(Math.floor(value * 100) + '%');
+
+    while(div.firstChild)
+      div.removeChild(div.firstChild);
+    div.appendChild(progress);
+  };
+
+  div.open = function(blob)
+  {
+    var open = document.createElement('A');
+    open.href = window.URL.createObjectURL(blob);
+    open.target = '_blank';
+    open.appendChild(document.createTextNode('Open'));
+
+    while(div.firstChild)
+    {
+      window.URL.revokeObjectURL(div.firstChild.href);
+      div.removeChild(div.firstChild);
+    }
+    div.appendChild(open);
+  };
+
+  var blob = fileentry.file || fileentry.blob
+
+  // Show if file have been downloaded previously or if we can transfer it
+  if(fileentry.bitmap)
+  {
+    var chunks = fileentry.size / shareit.chunksize;
+    if(chunks % 1 != 0)
+       chunks = Math.floor(chunks) + 1;
+
+    div.progressbar(fileentry.bitmap.indexes(true).length / chunks);
+  }
+  else if(blob)
+    div.open(blob);
+  else
+    div.transfer();
+
+  $(self).on(fileentry.hash + '.begin', function(event)
+  {
+    div.progressbar();
+  });
+  $(self).on(fileentry.hash + '.update', function(event, value)
+  {
+    div.progressbar(value);
+  });
+  $(self).on(fileentry.hash + '.end', function(event, blob)
+  {
+    div.open(blob);
+  });
+
+  return div;
+}
+
 _priv.filetype2className = function(filetype)
 {
   filetype = filetype.split('/');
