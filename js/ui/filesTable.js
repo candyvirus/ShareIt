@@ -27,7 +27,7 @@ _priv.spanedCell = function(table)
   return td;
 }
 
-_priv.rowFolder = function(path)
+_priv.rowFolder = function(path, colSpan)
 {
   // Folder row
   var tr = document.createElement('TR');
@@ -43,7 +43,7 @@ _priv.rowFolder = function(path)
     tr.setAttribute('data-tt-parent-id',path);
 
   var td = document.createElement('TD');
-      td.colSpan = 2;
+      td.colSpan = colSpan
   tr.appendChild(td);
 
   // Name & icon

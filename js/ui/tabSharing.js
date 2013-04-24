@@ -42,7 +42,7 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
         tr.setAttribute('data-tt-id',sharedpoint);
 
     var td = document.createElement('TD');
-        td.colSpan = 2;
+        td.colSpan = 3;
     tr.appendChild(td);
 
     // Name & icon
@@ -127,7 +127,7 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
         {
           prevPath = path;
 
-          this.tbody.appendChild(_priv.rowFolder(path));
+          this.tbody.appendChild(_priv.rowFolder(path, 3));
         }
       }
 
@@ -163,6 +163,7 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
         for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
         {
           var td = document.createElement('TD');
+          td.colSpan = 3
 
           var fullpath = ""
 

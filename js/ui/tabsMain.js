@@ -237,8 +237,10 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 
     shareit.searchEngine_search(query, function(error, fileslist)
     {
-      console.log(fileslist)
-      tabSearch.update(fileslist)
+      if(error)
+        console.error(error)
+      else
+        tabSearch.update(fileslist)
     })
 
     return tabSearch

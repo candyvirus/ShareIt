@@ -233,7 +233,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
       {
         prevPath = path;
 
-        this.tbody.appendChild(_priv.rowFolder(path));
+        this.tbody.appendChild(_priv.rowFolder(path, 4));
       }
 
       // Fileentry
@@ -253,6 +253,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
         var tr = document.createElement('TR');
+            td.colSpan = 4
             tr.setAttribute('data-tt-id', "");
             tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
 

@@ -58,9 +58,15 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
   tr.appendChild(th);
 
   var th = document.createElement('TH');
-      th.scope = 'col';
-      th.abbr = 'Size';
-      th.appendChild(document.createTextNode('Size'));
+    th.scope = 'col';
+    th.abbr = 'Size';
+    th.appendChild(document.createTextNode('Size'));
+  tr.appendChild(th);
+
+  var th = document.createElement('TH');
+    th.scope = 'col';
+    th.abbr = 'Score';
+    th.appendChild(document.createTextNode('Score'));
   tr.appendChild(th);
 
   var th = document.createElement('TH');
@@ -198,6 +204,11 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
         td.appendChild(document.createTextNode(humanize.filesize(size)));
     tr.appendChild(td);
 
+    // Score
+    var td = document.createElement('TD');
+        td.appendChild(document.createTextNode(fileentry.score.toFixed(2)));
+    tr.appendChild(td);
+
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
@@ -230,6 +241,7 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
         {
           var td = document.createElement('TD');
 
+          td.colSpan = 5
           td.appendChild(document.createTextNode(duplicate.name));
 
           tr.appendChild(td);
