@@ -181,7 +181,7 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
           var td = document.createElement('TD');
 
           td.colSpan = 6
-          td.appendChild(document.createTextNode(duplicate.name));
+          td.appendChild(document.createTextNode(duplicate));
 
           tr.appendChild(td);
         }
