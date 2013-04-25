@@ -159,29 +159,53 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
 
   this.updateFiles = function(fileslist)
   {
-    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
+    for(var i = 0; i<fileslist.length; i++)
     {
+      var fileentry = fileslist[i]
+
       // Fileentry
       var tr_file = rowFileentry(fileentry);
       this.tbody.appendChild(tr_file);
 
       // Duplicates
-      if(fileentry.duplicates)
+      var duplicates = fileentry.duplicates
+      if(duplicates)
       {
         tr_file.setAttribute('data-tt-id', fileentry.name);
 
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
-        var tr = document.createElement('TR');
-            tr.setAttribute('data-tt-id', "");
-            tr.setAttribute('data-tt-parent-id', fileentry.name);
-
-        for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
+        for(var j = 0; j<duplicates.length; j++)
         {
-          var td = document.createElement('TD');
+          var duplicate = duplicates[j]
 
-          td.colSpan = 6
-          td.appendChild(document.createTextNode(duplicate));
+          var tr = document.createElement('TR');
+              tr.setAttribute('data-tt-id', "");
+              tr.setAttribute('data-tt-parent-id', fileentry.name);
+
+          var td = document.createElement('TD');
+              td.colSpan = 6
+
+          // Name & icon
+          var a = document.createElement('A');
+              a.onclick = function()
+              {
+                // Swap names
+                var aux = fileentry.name
+                fileentry.name = duplicate.name
+                duplicate.name = aux
+
+                // Update fileentry row
+                var span = tr_file.cells[0].childNodes[1]
+                span.childNodes[0].nodeValue = fileentry.name
+
+                // Update duplicate row
+                this.childNodes[0].nodeValue = duplicate.name
+              }
+
+          a.appendChild(document.createTextNode(duplicate.name));
+
+          td.appendChild(a);
 
           tr.appendChild(td);
         }
