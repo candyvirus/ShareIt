@@ -156,12 +156,12 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
 
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
-        var tr = document.createElement('TR');
-            tr.setAttribute('data-tt-id', "");
-            tr.setAttribute('data-tt-parent-id', parent+"/"+fileentry.name);
-
         for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
         {
+          var tr = document.createElement('TR');
+              tr.setAttribute('data-tt-id', "");
+              tr.setAttribute('data-tt-parent-id', parent+"/"+fileentry.name);
+
           var td = document.createElement('TD');
           td.colSpan = 3
 

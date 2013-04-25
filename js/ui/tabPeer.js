@@ -180,12 +180,12 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
-        var tr = document.createElement('TR');
-            tr.setAttribute('data-tt-id', "");
-            tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
-
         for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
         {
+          var tr = document.createElement('TR');
+              tr.setAttribute('data-tt-id', "");
+              tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
+
           var td = document.createElement('TD');
               td.colSpan = 4
 
