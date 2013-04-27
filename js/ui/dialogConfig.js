@@ -87,7 +87,7 @@ _priv.DialogConfig = function(dialogId, options, shareit)
 
     policy(function()
     {
-      shareit.sharedpointsManager_add('folder', files, sharedpoint_added);
+      shareit.sharedpointsManager_add('FileList', files, sharedpoint_added);
 
       // Reset the input after send the files to hash
       input.val('');
