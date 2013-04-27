@@ -144,8 +144,12 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
     tr.appendChild(td);
 
     // Copies
+    var duplicates = 1
+    if(fileentry.duplicates)
+      duplicates += fileentry.duplicates.length
+
     var td = document.createElement('TD');
-        td.appendChild(document.createTextNode(1 + fileentry.duplicates.length));
+        td.appendChild(document.createTextNode(duplicates));
     tr.appendChild(td);
 
     // Action
