@@ -100,10 +100,12 @@ _priv.DialogConfig = function(dialogId, options, shareit)
   });
 
 
-  var dropzone = dialog.find('#Sharedpoints-tab');
+  var dropzone = document.getElementById('Sharedpoints-tab');
 
   dropzone.ondrop = function(event)
   {
+    console.log("Drop")
+
     var items = e.dataTransfer.items
 
     for(var i=0; i<items.length; i++)
@@ -113,7 +115,7 @@ _priv.DialogConfig = function(dialogId, options, shareit)
       if(entry.isDirectory)
         policy(function()
         {
-          shareit.sharedpointsManager_add('entry', entry, sharedpoint_added);
+          shareit.sharedpointsManager_add('Entry', entry, sharedpoint_added);
         });
 
       else
