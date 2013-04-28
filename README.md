@@ -18,10 +18,10 @@ send me an email just to let me know :-)
 
 File transfers in ShareIt! is build over WebRTC PeerConnection [DataChannels]
 (http://dev.w3.org/2011/webrtc/editor/webrtc.html#rtcdatachannel) so they could
-be transfered directly between peers, but since currently they are not available
-natively it's being used a [DataChannel polyfill]
-(https://github.com/piranna/DataChannel-polyfill). This makes it perfect for
-anonymity.
+be transfered directly between peers. Currently  it's being used an encrypted
+[DataChannel polyfill](https://github.com/piranna/DataChannel-polyfill) using
+secure WebSockets, but in the near future (version 2.0) they will be used native
+DataChannels. This make it perfect for anonymity.
 
 Let's make a purely browser based, ad-free, Free and Open Source private and
 anonymous distributed filesharing system!
@@ -50,22 +50,27 @@ can also host it on [DropBox](https://www.dropbox.com/help/201/en) if desired.
 It is currently publicly hosted on
 
 * [5Apps]  (https://5apps.com/demos/piranna/shareit)
-* [DropBox](https://dl-web.dropbox.com/spa/je1wmwnmw0lbae2/ShareIt!/index.html)
 * [GitHub] (http://piranna.github.com/ShareIt)
+* [DropBox](https://dl-web.dropbox.com/spa/je1wmwnmw0lbae2/ShareIt!/index.html)
+(development, cutting-edge instance. It would not work...)
 
 The peer connections are managed by an external handshake channel. Currently is
-being used primarily [PubNub](http://www.pubnub.com) and [SimpleSignaling]
-(https://github.com/piranna/SimpleSignaling) using a test server hosted on
-Nodejitsu, but it's being researched to use some more standard and distributed
-handshake protocols in an anonymous way so this single-point-of-failure could
-be dropped.
+being used [Jappix](https://jappix.com) annonimous XMPP server and it's being
+researched to use some more standard and distributed handshake protocols in an
+anonymous way. Previously it was being used the [PubNub](http://www.pubnub.com)
+pubsub platform, and the [SimpleSignaling]
+(https://github.com/piranna/SimpleSignaling) server using a test server hosted
+on Nodejitsu, but now althought maintained they are deprecated and it's
+recommended to don't use this centrilized, single-point-of-failure platforms.
 
-Regarding to the browser, it's recomended to use a high edge one. Test are being
-done on Chromium v24 at this moment and currently it's the only officially
-supported (news about it being used sucesfully on other browser are greatly
-accepted!!! :-D ). You can test it locally opening two browser tabs, but it
-should work also if used between several machines (it was succesfully tested
-to transfer files through the wild Internet from Finland to Spain... :-) ).
+Regarding to the browser, because of the usage of the DataChannels polyfiles
+currently it's only compatible with Chromium v23, v24 & v25, being incompatible
+with higher ones because changes on the PeerConnection API. Now that the WebRTC
+specification is more stable this will be fixed in the near future. You can test
+it locally opening two browser tabs, but it should work also if used between
+several machines (it was succesfully tested to transfer files through the wild
+Internet from Finland to Spain... :-) ). Due to its architecture, it can work
+between different domains, too.
 
 ## External libraries
 ### UI
@@ -112,5 +117,9 @@ The WebP2P protocol library (located at js/webp2p) and the ShareIt! app core
 some date in the future, and I am willing to relicense them under
 the BSD/MIT/Apache license if requested, I simply ask that you email me and tell
 me why. I'll almost certainly agree.
+
+Third party libraries (located for each sub-system under 'lib', 'js/webp2p/lib'
+and 'js/shareit-core/lib' folders) have their own licenses and are property of
+their respective authors, please put in contact directly to them.
 
 Patches graciously accepted!
