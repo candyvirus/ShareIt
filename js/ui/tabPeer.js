@@ -1,4 +1,8 @@
-function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
+var ui = (function(module, shareit){
+var _priv = module._priv = module._priv || {}
+
+
+_priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 {
   // Tabs
   var div = document.createElement('DIV');
@@ -80,85 +84,10 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
   var self = this;
 
-  function buttonFactory(fileentry)
-  {
-    var div = document.createElement('DIV');
-        div.id = fileentry.hash;
-
-    div.transfer = function()
-    {
-      var transfer = document.createElement('A');
-
-      transfer.onclick = onclickFactory(fileentry);
-      transfer.appendChild(document.createTextNode('Transfer'));
-
-      while(div.firstChild)
-        div.removeChild(div.firstChild);
-      div.appendChild(transfer);
-    };
-
-    div.progressbar = function(value)
-    {
-      if(value == undefined)
-         value = 0;
-
-      var progress = document.createTextNode(Math.floor(value * 100) + '%');
-
-      while(div.firstChild)
-        div.removeChild(div.firstChild);
-      div.appendChild(progress);
-    };
-
-    div.open = function(blob)
-    {
-      var open = document.createElement('A');
-
-      open.href = window.URL.createObjectURL(blob);
-      open.target = '_blank';
-      open.appendChild(document.createTextNode('Open'));
-
-      while(div.firstChild)
-      {
-        window.URL.revokeObjectURL(div.firstChild.href);
-        div.removeChild(div.firstChild);
-      }
-      div.appendChild(open);
-    };
-
-    // Show if file have been downloaded previously or if we can transfer it
-    if(fileentry.bitmap)
-    {
-      var chunks = fileentry.size / chunksize;
-      if(chunks % 1 != 0)
-         chunks = Math.floor(chunks) + 1;
-
-      div.progressbar(fileentry.bitmap.indexes(true).length / chunks);
-    }
-    else if(fileentry.blob)
-      div.open(fileentry.blob);
-    else
-      div.transfer();
-
-    $(self).on(fileentry.hash + '.begin', function(event)
-    {
-      div.progressbar();
-    });
-    $(self).on(fileentry.hash + '.update', function(event, value)
-    {
-      div.progressbar(value);
-    });
-    $(self).on(fileentry.hash + '.end', function(event)
-    {
-      div.open(fileentry.blob);
-    });
-
-    return div;
-  }
-
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var captionCell = spanedCell(table);
+    var captionCell = _priv.spanedCell(table);
     captionCell.appendChild(document.createTextNode('Remote peer is not sharing files.'));
 
 //    var anchor = document.createElement('A')
@@ -179,19 +108,22 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFactory(fileentry)
+  function rowFileentry(fileentry)
   {
     var tr = document.createElement('TR');
+    tr.setAttribute('data-tt-id', "");  // Hack for TreeTable
 
     var td = document.createElement('TD');
     tr.appendChild(td);
 
-    var type = (fileentry.type != undefined) ? fileentry.type : fileentry.file.type;
+    var blob = fileentry.file || fileentry.blob || fileentry;
+
+    var type = blob.type;
 
     // Name & icon
     var span = document.createElement('SPAN');
-        span.className = filetype2className(type);
-        span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
+        span.className = _priv.filetype2className(type);
+        span.appendChild(document.createTextNode(fileentry.name));
     td.appendChild(span);
 
     // Type
@@ -200,7 +132,8 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     tr.appendChild(td);
 
     // Size
-    var size = (fileentry.size != undefined) ? fileentry.size : fileentry.file.size;
+    var size = blob.size;
+
     var td = document.createElement('TD');
         td.className = 'filesize';
         td.appendChild(document.createTextNode(humanize.filesize(size)));
@@ -209,7 +142,7 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
-        td.appendChild(buttonFactory(fileentry));
+        td.appendChild(_priv.buttonFactory(self, fileentry, onclickFactory));
     tr.appendChild(td);
 
     return tr;
@@ -221,17 +154,75 @@ function TabPeer(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
     for(var i=0, fileentry; fileentry=fileslist[i]; i++)
     {
-      // Add folder row
-      prevPath = rowFolder(this.tbody, prevPath, fileentry.path);
+      // Folder
+      var path = fileentry.path;
 
-      // Add file row
-      var tr = rowFactory(fileentry);
+      if(path && prevPath != path)
+      {
+        prevPath = path;
+
+        this.tbody.appendChild(_priv.rowFolder(path, 4));
+      }
+
+      // Fileentry
+      var tr_file = rowFileentry(fileentry);
+      this.tbody.appendChild(tr_file);
 
       if(prevPath)
-        tr.setAttribute('class', 'child-of-' + classEscape(prevPath));
+        tr_file.setAttribute('data-tt-parent-id', prevPath);
 
-      this.tbody.appendChild(tr);
+      // Duplicates
+      if(fileentry.duplicates)
+      {
+        tr_file.setAttribute('data-tt-id', prevPath
+                                         ? prevPath+"/"+fileentry.name
+                                         : fileentry.name);
+
+        tr_file.setAttribute('data-tt-initialState', "collapsed");
+
+        for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
+        {
+          var tr = document.createElement('TR');
+              tr.setAttribute('data-tt-id', "");
+              tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
+
+          var td = document.createElement('TD');
+              td.colSpan = 4
+
+          var fullpath = ""
+
+          // Peer
+          if(duplicate.peer)
+            fullpath += '['+duplicate.peer+']'
+
+          // Sharedpoint
+          if(duplicate.sharedpoint)
+            fullpath += '/'+duplicate.sharedpoint
+
+          // Path
+          if(duplicate.path)
+          {
+            if(fullpath)
+               fullpath += '/'
+            fullpath += duplicate.path
+          }
+
+          // Name
+          if(fullpath)
+             fullpath += '/'
+          fullpath += duplicate.name
+
+          td.appendChild(document.createTextNode(fullpath));
+
+          tr.appendChild(td);
+        }
+
+        this.tbody.appendChild(tr);
+      }
     }
   };
 }
-TabPeer.prototype = FilesTable;
+_priv.TabPeer.prototype = _priv.FilesTable;
+
+return module
+})(ui || {}, shareit)

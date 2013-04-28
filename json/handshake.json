@@ -1,5 +1,18 @@
 [
     [
+        "XMPP",
+        {
+            "httpbase": "https://bind.jappix.com/",
+
+            "domain":   "anonymous.jappix.com",
+
+            "authtype": "saslanon",
+            "secure":   true,
+
+            "room": "webp2p@muc.jappix.com"
+        }
+    ],
+    [
         "PubNub",
         {
             "channel"      : "ShareIt",
@@ -14,6 +27,37 @@
         "SimpleSignaling",
         {
             "ws_uri": "wss://simplesignaling-piranna.dotcloud.com"
+        }
+    ],
+    [
+        "SIP",
+        {
+            "outbound_proxy_set": "ws://192.168.1.33:10080"
+        }
+    ],
+    [
+        "xRTML",
+        {
+            "appKey":    "ESqhZz",
+            "authToken": "4b29a9591e1d4311bccc69b28c542b60",
+            "channels":  [{"name": "ShareIt"}],
+            "url":       "http://developers2.realtime.livehtml.net/server/2.1",
+
+            "max_connections": 100
+        }
+    ],
+    [
+        "Pusher",
+        {
+            "appKey":    "",
+
+            "encrypted": true,
+
+            "authToken": "4b29a9591e1d4311bccc69b28c542b60",
+            "channels":  [{"name": "presence-ShareIt"}],
+            "url":       "http://developers2.realtime.livehtml.net/server/2.1",
+
+            "max_connections": 20
         }
     ]
 ]

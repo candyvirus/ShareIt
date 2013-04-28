@@ -1,34 +1,82 @@
+var webp2p = (function(module){
+var _priv = module._priv = module._priv || {}
+
 /**
  * Handshake channel connector for SimpleSignaling
  * @param {Object} configuration Configuration object.
  */
-function Handshake_SimpleSignaling(configuration)
+_priv.HandshakeManager.registerConstructor('SimpleSignaling',
+function(configuration)
 {
+  EventTarget.call(this);
+
+  this.isPubsub = true;
+
   var self = this;
 
-  // Connect a handshake channel to the XMPP server
-  var handshake = new SimpleSignaling(configuration);
-  handshake.onopen = function(uid)
+  // Connect a handshake channel to the SimpleSignaling server
+  var connection = new SimpleSignaling(configuration);
+
+
+  /**
+   * Receive messages
+   */
+  connection.onmessage = function(message)
   {
-    // Compose and send message
-    self.send = function(uid, data)
-    {
-      handshake.send(uid, data);
-    };
+    var event = JSON.parse(message.data);
 
-    handshake.onmessage = function(uid, data)
-    {
-      if(self.onmessage)
-         self.onmessage(uid, data);
-    };
+    // Don't try to connect to ourselves
+    if(event.from == configuration.uid)
+      return
 
-    // Set handshake channel as open
-    if(self.onopen)
-       self.onopen(uid);
+    this.dispatchEvent(event);
   };
-  handshake.onerror = function(error)
+
+
+  /**
+   * Handle the connection to the handshake server
+   */
+  connection.onopen = function()
+  {
+    // Notify our presence
+    send({type: 'presence', from: configuration.uid});
+
+    // Notify that the connection to this handshake server is open
+    if(self.onopen)
+       self.onopen();
+  };
+
+
+  /**
+   * Handle errors on the connection
+   */
+  connection.onerror = function(error)
   {
     if(self.onerror)
        self.onerror(error);
   };
-}
+
+
+  /**
+   * Send a message to a peer
+   */
+  this.send = function(data, uid)
+  {
+    data.from = configuration.uid
+    data.to = uid
+
+    connection.send(JSON.stringify(data));
+  }
+
+
+  /**
+   * Close the connection with this handshake server
+   */
+  this.close = function()
+  {
+    connection.close()
+  }
+})
+
+return module
+})(webp2p || {})

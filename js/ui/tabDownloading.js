@@ -1,4 +1,7 @@
-function TabDownloading(tableId, preferencesDialogOpen)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabDownloading = function(tableId, preferencesDialogOpen)
 {
   var self = this;
 
@@ -9,7 +12,7 @@ function TabDownloading(tableId, preferencesDialogOpen)
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
+    var cell = _priv.spanedCell(table);
     cell.appendChild(document.createTextNode('There are no downloads, '));
 
     var anchor = document.createElement('A');
@@ -34,14 +37,15 @@ function TabDownloading(tableId, preferencesDialogOpen)
   function rowFactory(fileentry)
   {
     var tr = document.createElement('TR');
+    tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
 
     var td = document.createElement('TD');
     tr.appendChild(td);
 
     // Name & icon
     var span = document.createElement('SPAN');
-        span.className = filetype2className(fileentry.type);
-        span.appendChild(document.createTextNode(fileentry.name));
+    span.className = _priv.filetype2className(fileentry.blob.type);
+    span.appendChild(document.createTextNode(fileentry.name));
     td.appendChild(span);
 
     // Type
@@ -148,7 +152,10 @@ function TabDownloading(tableId, preferencesDialogOpen)
     }
 
     // Fill the table
-    FilesTable.update.call(this, fileslist);
+    _priv.FilesTable.update.call(this, fileslist);
   };
 }
-TabDownloading.prototype = FilesTable;
+_priv.TabDownloading.prototype = _priv.FilesTable;
+
+return module
+})(ui || {})

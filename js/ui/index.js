@@ -1,7 +1,7 @@
 /**
  * @fileoverview Magic dependency loading. Taken from JsJaC library.
  * @author Stefan Strigler steve@zeank.in-berlin.de (JsJaC)
- * @author Jesús Leganés Combarro "Piranna" piranna@gmail.com (webp2p)
+ * @author Jesús Leganés Combarro "Piranna" piranna@gmail.com (ShareIt!)
  */
 
 var ui =
@@ -16,7 +16,7 @@ var ui =
   {
     var scripts = document.getElementsByTagName('script');
     var path = './';
-    for(var i = 0; i<scripts.length; i++)
+    for(var i=0; i<scripts.length; i++)
     {
       var src = scripts.item(i).src;
       var regex = /ui\/index\.js$/;
@@ -46,8 +46,8 @@ ui.load(['dialogAbout',
          'menuTools',
          'tabDownloading',
          'tabPeer',
+         'tabSearch',
          'tabSharing',
          'tabsMain',
          'tableSharedpoints',
-         'ui'
-         ]);
+         'ui']);

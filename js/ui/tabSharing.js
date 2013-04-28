@@ -1,4 +1,7 @@
-function TabSharing(tableId, preferencesDialogOpen)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabSharing = function(tableId, preferencesDialogOpen)
 {
   var self = this;
 
@@ -9,8 +12,8 @@ function TabSharing(tableId, preferencesDialogOpen)
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
-    cell.appendChild(document.createTextNode('You are not sharing any file, ' +
+    var cell = _priv.spanedCell(table);
+    cell.appendChild(document.createTextNode('You are not sharing any file, '+
                                              'please add a shared point on the '));
 
     var anchor = document.createElement('A');
@@ -32,9 +35,30 @@ function TabSharing(tableId, preferencesDialogOpen)
   this.noFilesCaption = noFilesCaption();
 
 
-  function rowFactory(fileentry)
+  function rowSharedpoint(sharedpoint)
   {
+    // Sharedpoint row
     var tr = document.createElement('TR');
+        tr.setAttribute('data-tt-id',sharedpoint);
+
+    var td = document.createElement('TD');
+        td.colSpan = 3;
+    tr.appendChild(td);
+
+    // Name & icon
+    var span = document.createElement('SPAN');
+//        span.className = fileentry.sharedpoint.type
+        span.appendChild(document.createTextNode(sharedpoint));
+    td.appendChild(span);
+
+    return tr
+  }
+
+  function rowFileentry(fileentry)
+  {
+    // Fileentry row
+    var tr = document.createElement('TR');
+        tr.setAttribute('data-tt-id', "");  // Hack for TreeTable
 
     var td = document.createElement('TD');
     tr.appendChild(td);
@@ -53,8 +77,8 @@ function TabSharing(tableId, preferencesDialogOpen)
     //window.URL.revokeObjectURL(div.firstChild.href);
 
     var span = document.createElement('SPAN');
-        span.className = filetype2className(type);
-        span.appendChild(document.createTextNode(fileentry.name || fileentry.file.name));
+        span.className = _priv.filetype2className(type);
+        span.appendChild(document.createTextNode(fileentry.name));
     a.appendChild(span);
 
     // Type
@@ -73,67 +97,104 @@ function TabSharing(tableId, preferencesDialogOpen)
     return tr;
   }
 
-  function rowSharedpoint(tbody, sharedpoint)
-  {
-    // Sharedpoint row
-    var tr = document.createElement('TR');
-        tr.id = classEscape(sharedpoint);
-
-    var td = document.createElement('TD');
-        td.colSpan = 2;
-    tr.appendChild(td);
-
-    // Sharedpoint name & icon
-    var span = document.createElement('SPAN');
-//      span.className = fileentry.sharedpoint.type
-        span.appendChild(document.createTextNode(sharedpoint));
-    td.appendChild(span);
-
-    tbody.appendChild(tr);
-  }
-
   this.updateFiles = function(fileslist)
   {
-    var prevSharedpoint = null;
-    var prevPath = '';
+    var prevSharedpoint;
+    var prevPath;
 
-    for(var i=0, fileentry; fileentry=fileslist[i]; i++)
+    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
     {
-      // Add sharedpoint row
+      // Sharedpoint
       var sharedpoint = fileentry.sharedpoint;
 
       if(prevSharedpoint != sharedpoint)
       {
         if(sharedpoint)
-          rowSharedpoint(this.tbody, sharedpoint);
+          this.tbody.appendChild(rowSharedpoint(sharedpoint));
 
         prevSharedpoint = sharedpoint;
         prevPath = '';
       }
 
-      // Add folder row
+      // Folder
       var path = fileentry.path;
 
-      if(prevSharedpoint && path)
+      if(sharedpoint && path)
       {
-        path = prevSharedpoint + '/' + path;
+        path = sharedpoint + '/' + path;
 
-        prevPath = rowFolder(this.tbody, prevPath, path);
+        if(prevPath != path)
+        {
+          prevPath = path;
+
+          this.tbody.appendChild(_priv.rowFolder(path, 3));
+        }
       }
 
-      // Add file row
-      var tr = rowFactory(fileentry);
-
+      // Fileentry
+      var parent;
       if(sharedpoint)
       {
         if(prevPath)
-          sharedpoint = prevPath;
-
-        tr.setAttribute('class', 'child-of-' + classEscape(sharedpoint));
+          parent = prevPath;
+        else
+          parent = sharedpoint
       }
 
-      this.tbody.appendChild(tr);
+      var tr_file = rowFileentry(fileentry)
+      this.tbody.appendChild(tr_file);
+
+      if(parent)
+        tr_file.setAttribute('data-tt-parent-id', parent);
+
+      // Duplicates
+      if(fileentry.duplicates)
+      {
+        tr_file.setAttribute('data-tt-id', parent
+                                         ? parent+"/"+fileentry.name
+                                         : fileentry.name);
+
+        tr_file.setAttribute('data-tt-initialState', "collapsed");
+
+        for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
+        {
+          var tr = document.createElement('TR');
+              tr.setAttribute('data-tt-id', "");
+              tr.setAttribute('data-tt-parent-id', parent+"/"+fileentry.name);
+
+          var td = document.createElement('TD');
+          td.colSpan = 3
+
+          var fullpath = ""
+
+          // Sharedpoint
+          if(duplicate.sharedpoint)
+            fullpath += duplicate.sharedpoint
+
+          // Path
+          if(duplicate.path)
+          {
+            if(fullpath)
+               fullpath += '/'
+            fullpath += duplicate.path
+          }
+
+          // Name
+          if(fullpath)
+             fullpath += '/'
+          fullpath += duplicate.name
+
+          td.appendChild(document.createTextNode(fullpath));
+
+          tr.appendChild(td);
+        }
+
+        this.tbody.appendChild(tr);
+      }
     }
   };
 }
-TabSharing.prototype = FilesTable;
+_priv.TabSharing.prototype = _priv.FilesTable;
+
+return module
+})(ui || {})

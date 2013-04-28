@@ -1,4 +1,7 @@
-function TabsMain(tabsId, webp2p, preferencesDialogOpen)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 {
   var self = this;
 
@@ -18,18 +21,24 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
 
 
   // Downloading tab
-  var tabDownloading = new TabDownloading('Downloading', preferencesDialogOpen);
+  var tabDownloading = new _priv.TabDownloading('Downloading',
+                                                preferencesDialogOpen);
 
   function tabDownloading_update()
   {
     tabDownloading.dirty = requestAnimationFrame(function()
     {
-      webp2p.files_downloading(function(filelist)
+      shareit.files_downloading(function(error, filelist)
       {
-        self.isDownloading = filelist.length;
-        tabDownloading.update(filelist);
+        if(error)
+          console.error(error)
+        else
+        {
+          self.isDownloading = filelist.length;
+          tabDownloading.update(filelist);
 
-        tabDownloading.dirty = false;
+          tabDownloading.dirty = false;
+        }
       });
     }, tabDownloading.tbody);
   }
@@ -49,30 +58,35 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
     tabDownloading_update();
   }
 
-  webp2p.addEventListener('transfer.begin', tabDownloading_checkAndUpdate);
-  webp2p.addEventListener('transfer.update', function(event)
+  shareit.addEventListener('transfer.begin', tabDownloading_checkAndUpdate);
+  shareit.addEventListener('transfer.update', function(event)
   {
-    var type = event.data[0];
-    var value = event.data[1];
+    var hash = event.fileentry.hash;
+    var value = event.value;
 
-    $(tabDownloading).trigger(type, [value]);
+    $(tabDownloading).trigger(hash, [value]);
   });
-  webp2p.addEventListener('transfer.end', tabDownloading_checkAndUpdate);
+  shareit.addEventListener('transfer.end', tabDownloading_checkAndUpdate);
 
 
   // Sharing tab
-  var tabSharing = new TabSharing('Sharing', preferencesDialogOpen);
+  var tabSharing = new _priv.TabSharing('Sharing', preferencesDialogOpen);
 
   function tabSharing_update()
   {
     tabSharing.dirty = requestAnimationFrame(function()
     {
-      webp2p.files_sharing(function(filelist)
+      shareit.files_sharing(function(error, filelist)
       {
-        self.isSharing = filelist.length;
-        tabSharing.update(filelist);
+        if(error)
+          console.error(error)
+        else
+        {
+          self.isSharing = filelist.length;
+          tabSharing.update(filelist);
 
-        tabSharing.dirty = false;
+          tabSharing.dirty = false;
+        }
       });
     }, tabSharing.tbody);
   }
@@ -92,10 +106,10 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
     tabSharing_update();
   }
 
-  webp2p.addEventListener('transfer.end', tabSharing_checkAndUpdate);
+  shareit.addEventListener('transfer.end', tabSharing_checkAndUpdate);
 
-  webp2p.addEventListener('file.added',   tabSharing_checkAndUpdate);
-  webp2p.addEventListener('file.deleted', tabSharing_checkAndUpdate);
+  shareit.addEventListener('file.added',   tabSharing_checkAndUpdate);
+  shareit.addEventListener('file.deleted', tabSharing_checkAndUpdate);
 
 
   function tabsbeforeactivate(event, ui)
@@ -120,11 +134,129 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
   tabs.on('tabsbeforeactivate', tabsbeforeactivate)
   $(document).live('pagebeforehide', tabsbeforeactivate)
 
-  // Peers tabs
-
-  this.openOrCreatePeer = function(uid, preferencesDialogOpen, webp2p, channel)
+  function createTab(tabPanelId, caption, onclose)
   {
-    var tabPanelId = '#' + tabsId + '-' + uid;
+    // Tab
+    var li = document.createElement('LI');
+
+    var a = document.createElement('A');
+        a.href = tabPanelId;
+        a.appendChild(document.createTextNode(caption));
+    li.appendChild(a);
+
+    var span = document.createElement('SPAN');
+        span.setAttribute('class', 'ui-icon ui-icon-closethick');
+        span.appendChild(document.createTextNode('Remove Tab'));
+        span.onclick = function()
+        {
+          if(onclose)
+            onclose()
+
+          // Remove the tab
+          var index = $('#ui-corner-top', tabs).index($(this).parent());
+          tabs.find('.ui-tabs-nav li:eq(' + index + ')').remove();
+
+          // Remove the panel
+          $(tabPanelId).remove();
+
+          // If there are no more peer/search tabs, check if we are sharing or
+          // downloading a file and if not, show again the Home screen
+          var disabled = $('#' + tabsId).tabs('option', 'disabled');
+//          if(!index && disabled.length == 2)
+          if(disabled.length == 2)
+          {
+            $('#' + tabsId).tabs('option', 'collapsible', true);
+            $('#Home-tab').appendTo('#' + tabsId);
+          }
+
+          // Refresh the tabs widget
+          if(!$.mobile)
+            tabs.tabs('refresh');
+        }
+    li.appendChild(span);
+
+    $(li).appendTo('#' + tabsId + ' .ui-tabs-nav');
+
+    // Tab panel
+    if($.mobile)
+      $('#Home ul').listview('refresh');
+  }
+
+  function beginTransfer(fileentry)
+  {
+    return function()
+    {
+      policy(function()
+      {
+        // Begin transfer of file
+        shareit.transfer_begin(fileentry);
+
+        // Don't buble click event
+        return false;
+      });
+    }
+  }
+
+  function createPeer(tabPanelId, uid)
+  {
+    // Tab
+    createTab(tabPanelId, 'UID: ' + uid, function()
+    {
+      shareit.fileslist_disableUpdates(uid, function(error)
+      {
+        if(error)
+          console.error(error)
+      });
+    })
+
+    // Tab panel
+    var tabPeer = new _priv.TabPeer(uid, tabsId, preferencesDialogOpen,
+                                    beginTransfer);
+
+    // Get notified when this channel files list is updated
+    // and update the UI peer files table
+    shareit.addEventListener('fileslist.updated', function(event)
+    {
+      var fileslist = event.fileslist;
+
+      if(uid == event.uid)
+        tabPeer.update(fileslist);
+    });
+
+    // Request the peer's files list
+    var SEND_UPDATES = 1;
+//    var SMALL_FILES_ACCELERATOR = 2
+    var flags = SEND_UPDATES;
+//    if()
+//      flags |= SMALL_FILES_ACCELERATOR
+    shareit.fileslist_query(uid, flags);
+
+    return tabPeer
+  }
+
+  function createSearch(tabPanelId, query)
+  {
+    // Tab
+    createTab(tabPanelId, 'Search: ' + query)
+
+    // Tab panel
+    var tabSearch = new _priv.TabSearch(query, tabsId, beginTransfer)
+
+    shareit.searchEngine_search(query, function(error, fileslist)
+    {
+      if(error)
+        console.error(error)
+      else
+        tabSearch.update(fileslist)
+    })
+
+    return tabSearch
+  }
+
+  // Peers tabs
+  this.openOrCreate = function(type, data)
+  {
+    var tabPanelId = '#' + tabsId + '-' + data;
 
     // Get index of the peer tab
     var index = tabs.find('table').index($(tabPanelId));
@@ -136,107 +268,49 @@ function TabsMain(tabsId, webp2p, preferencesDialogOpen)
     // Peer tab don't exists, create it
     else
     {
-      // Tab
-      var li = document.createElement('LI');
+      var tab
 
-      var a = document.createElement('A');
-          a.href = tabPanelId;
-          a.appendChild(document.createTextNode('UID: ' + uid));
-      li.appendChild(a);
-
-      var span = document.createElement('SPAN');
-
-      span.setAttribute('class', 'ui-icon ui-icon-closethick');
-      span.appendChild(document.createTextNode('Remove Tab'));
-      span.onclick = function()
+      switch(type)
       {
-        channel.fileslist_disableUpdates();
+        case 'peer':
+          tab = createPeer(tabPanelId, data)
+          break
 
-        // Remove the tab
-        var index = $('#ui-corner-top', tabs).index($(this).parent());
-        tabs.find('.ui-tabs-nav li:eq(' + index + ')').remove();
+        case 'search':
+          tab = createSearch(tabPanelId, data)
+          break
 
-        // Remove the panel
-        $(tabPanelId).remove();
+        default:
+          console.error('Undefined tab type: '+type)
+          return
+      }
 
-        // If there are no more peer/search tabs, check if we are sharing or
-        // downloading a file and if not, show again the Home screen
-        var disabled = $('#' + tabsId).tabs('option', 'disabled');
-//        if(!index && disabled.length == 2)
-        if(disabled.length == 2)
-        {
-          $('#' + tabsId).tabs('option', 'collapsible', true);
-          $('#Home-tab').appendTo('#' + tabsId);
-        }
-
-        // Refresh the tabs widget
-        if(!$.mobile)
-          tabs.tabs('refresh');
-      };
-      li.appendChild(span);
-
-      $(li).appendTo('#' + tabsId + ' .ui-tabs-nav');
-
-      // Tab panel
-      if($.mobile)
-        $('#Home ul').listview('refresh');
-
-      var tabPeer = new TabPeer(uid, tabsId, preferencesDialogOpen,
-      function(fileentry)
+      shareit.addEventListener('transfer.begin', function(event)
       {
-        return function()
-        {
-          policy(function()
-          {
-            // Begin transfer of file
-            webp2p.transfer_begin(fileentry);
+        var fileentry = event.fileentry;
 
-            // Don't buble click event
-            return false;
-          });
-        }
+        $(tab).trigger(fileentry.hash + '.begin');
       });
-
-      webp2p.addEventListener('transfer.begin', function(event)
+      shareit.addEventListener('transfer.update', function(event)
       {
-        var fileentry = event.data[0];
+        var fileentry = event.fileentry;
+        var value = event.value;
 
-        $(tabPeer).trigger(fileentry.hash + '.begin');
+        $(tab).trigger(fileentry.hash + '.update', [value]);
       });
-      webp2p.addEventListener('transfer.update', function(event)
+      shareit.addEventListener('transfer.end', function(event)
       {
-        var fileentry = event.data[0];
-        var value = event.data[1];
+        var fileentry = event.fileentry;
 
-        $(tabPeer).trigger(fileentry.hash + '.update', [value]);
+        $(tab).trigger(fileentry.hash + '.end', [fileentry.blob]);
       });
-      webp2p.addEventListener('transfer.end', function(event)
-      {
-        var fileentry = event.data[0];
-
-        $(tabPeer).trigger(fileentry.hash + '.end');
-      });
-
-      // Get notified when this channel files list is updated
-      // and update the UI peer files table
-      channel.addEventListener('fileslist._updated', function(event)
-      {
-        var fileslist = event.data[0];
-
-        tabPeer.update(fileslist);
-      });
-
-      // Request the peer's files list
-      var SEND_UPDATES = 1;
-//      var SMALL_FILES_ACCELERATOR = 2
-      var flags = SEND_UPDATES;
-//      if()
-//        flags |= SMALL_FILES_ACCELERATOR
-      channel.fileslist_query(flags);
     }
   };
 
 
   // Tools menu
-  MenuTools('tools-menu');
+  _priv.MenuTools('tools-menu');
 }
+
+return module
+})(ui || {})

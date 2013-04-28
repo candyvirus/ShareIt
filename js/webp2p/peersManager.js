@@ -1,19 +1,21 @@
+var webp2p = (function(module){
+var _priv = module._priv = module._priv || {}
+
 // Fallbacks for vendor-specific variables until the spec is finalized.
-var RTCPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection || mozRTCPeerConnection;
 
 
 /**
  * @classdesc Manager of the communications with the other peers
  * @constructor
- * @param {IDBDatabase} db ShareIt! database.
  * @param {String} [stun_server="stun.l.google.com:19302"] URL of the server
  * used for the STUN communications.
  */
-function PeersManager(db, stun_server)
+module.PeersManager = function(handshake_servers_file, stun_server)
 {
   // Set a default STUN server if none is specified
   if(stun_server == undefined)
-    stun_server = 'stun.l.google.com:19302';
+     stun_server = 'stun.l.google.com:19302';
 
   EventTarget.call(this);
 
@@ -33,262 +35,23 @@ function PeersManager(db, stun_server)
 
   this.uid = UUIDv4();
 
-  /**
-   * Get the channel of one of the peers that have the file from its hash.
-   * Since the hash and the tracker system are currently not implemented we'll
-   * get just the channel of the peer where we got the file that we added
-   * ad-hoc before
-   * @param {Fileentry} Fileentry of the file to be downloaded.
-   * @return {RTCDataChannel} Channel where we can ask for data of the file.
-   */
-  function getChannel(fileentry)
-  {
-    return fileentry.channel;
-  }
-
-  /**
-   * Request (more) data for a file
-   * @param {Fileentry} Fileentry of the file to be requested.
-   */
-  function transfer_query(fileentry)
-  {
-    var channel = getChannel(fileentry);
-    var chunk = fileentry.bitmap.getRandom(false);
-
-    channel.transfer_query(fileentry, chunk);
-  }
-
-  /**
-   * Start the download of a file
-   * @param {Fileentry} Fileentry of the file to be downloaded.
-   */
-  this.transfer_begin = function(fileentry)
-  {
-    function onerror(errorCode)
-    {
-      console.error("Transfer begin: '" + fileentry.name + "' is already in database.");
-    }
-
-    // Add a blob container to our file stub
-    fileentry.blob = new Blob([''],
-    {
-      type: fileentry.type
-    });
-
-    // File size is zero, generate the file instead of request it
-    if(!fileentry.size)
-    {
-      // Insert new empty "file" inside IndexedDB
-      db.files_add(fileentry, function()
-      {
-        self.transfer_end(fileentry);
-      },
-      onerror);
-
-      return;
-    }
-
-    // Calc number of necesary chunks to download
-    // and add a bitmap to our file stub
-    var chunks = fileentry.size / chunksize;
-    if(chunks % 1 != 0)
-       chunks = Math.floor(chunks) + 1;
-
-    fileentry.bitmap = new Bitmap(chunks);
-
-    // Insert new "file" inside IndexedDB
-    db.files_add(fileentry, function()
-    {
-      var event = document.createEvent("Event");
-          event.initEvent('transfer.begin',true,true);
-          event.data = [fileentry]
-
-      self.dispatchEvent(event);
-
-      // Demand data from the begining of the file
-      transfer_query(fileentry);
-    },
-    onerror);
-  };
-
-  this.transfer_update = function(fileentry, pending_chunks)
-  {
-    var chunks = fileentry.size / chunksize;
-    if(chunks % 1 != 0)
-       chunks = Math.floor(chunks) + 1;
-
-    // Notify about transfer update
-    var event = document.createEvent("Event");
-        event.initEvent('transfer.update',true,true);
-        event.data = [fileentry, 1 - pending_chunks / chunks]
-
-    this.dispatchEvent(event);
-  };
-
-  this.transfer_end = function(fileentry)
-  {
-    // Auto-save downloaded file
-    savetodisk(fileentry.blob, fileentry.name);
-
-    // Notify about transfer end
-    var event = document.createEvent("Event");
-        event.initEvent('transfer.end',true,true);
-        event.data = [fileentry]
-
-    self.dispatchEvent(event);
-
-    console.log('Transfer of ' + fileentry.name + ' finished!');
-  };
-
-  /**
-   * Update the data content of a {Fileentry}
-   * @param {Fileentry} fileentry {Fileentry} to be updated.
-   * @param {Number} chunk Chunk position to be updated.
-   * @param data Data to be set.
-   */
-  this.updateFile = function(fileentry, chunk, data)
-  {
-    fileentry.bitmap.set(chunk, true);
-
-    // Create new FileWriter
-    var fw = new FileWriter(fileentry.blob);
-
-    // Calc and set pos, and increase blob size if necessary
-    var pos = chunk * chunksize;
-    if(fw.length < pos)
-      fw.truncate(pos);
-    fw.seek(pos);
-
-    // Write data to the blob
-    var blob = fw.write(data);
-
-    // This is not standard, but it's the only way to get out the
-    // created blob
-    if(blob != undefined)
-      fileentry.blob = blob;
-
-    // Check for pending chunks and require them or save the file
-    var pending_chunks = fileentry.bitmap.indexes(false).length;
-
-    if(pending_chunks)
-    {
-      // Demand more data from one of the pending chunks after update
-      // the fileentry status on the database
-      db.files_put(fileentry, function()
-      {
-        self.transfer_update(fileentry, pending_chunks);
-
-        transfer_query(fileentry);
-      });
-    }
-    else
-    {
-      // There are no more chunks, set file as fully downloaded
-      delete fileentry.bitmap;
-
-      db.files_put(fileentry, function()
-      {
-        self.transfer_end(fileentry);
-      });
-    }
-  };
-
-  /**
-   * Notify to all peers that I have added a new file (both by the user or
-   * downloaded)
-   * @param {Fileentry} Fileentry of the file that have been added.
-   */
-  this._send_file_added = function(fileentry)
-  {
-    var self = this;
-
-    var event = document.createEvent("Event");
-        event.initEvent('file.added',true,true);
-        event.data = [fileentry]
-
-    this.dispatchEvent(event);
-
-    // Update fileentry sharedpoint size
-    db.sharepoints_get(fileentry.sharedpoint, function(sharedpoint)
-    {
-      // Increase sharedpoint shared size
-      sharedpoint.size += fileentry.file.size;
-
-      db.sharepoints_put(sharedpoint, function()
-      {
-        var event = document.createEvent("Event");
-            event.initEvent('sharedpoints.update',true,true);
-
-        self.dispatchEvent(event);
-      });
-    });
-  };
-
-  /**
-   * Notify to all peers that I have deleted a file (so it's not accesible)
-   * @param {Fileentry} Fileentry of the file that have been deleted.
-   */
-  this._send_file_deleted = function(fileentry)
-  {
-    var self = this;
-
-    var event = document.createEvent("Event");
-        event.initEvent('file.deleted',true,true);
-        event.data = [fileentry]
-
-    this.dispatchEvent(event);
-
-    // Update fileentry sharedpoint size
-    db.sharepoints_get(fileentry.sharedpoint, function(sharedpoint)
-    {
-      // Increase sharedpoint shared size
-      sharedpoint.size -= fileentry.file.size;
-
-      db.sharepoints_put(sharedpoint, function()
-      {
-        var event = document.createEvent("Event");
-            event.initEvent('sharedpoints.update',true,true);
-
-        self.dispatchEvent(event);
-      });
-    });
-  };
-
 
   /**
    * Create a new RTCPeerConnection
    * @param {UUID} id Identifier of the other peer so later can be accessed.
    * @return {RTCPeerConnection}
    */
-  function createPeerConnection(uid, incomingChannel)
+  function createPeerConnection(uid)
   {
-    var configuration = {iceServers: [{url: 'stun:'+stun_server}]}
-    var constraints = {optional: [{RtpDataChannels: true}]}
-
-    var pc = peers[uid] = new RTCPeerConnection(configuration, constraints);
-
-    // PeerConnection has generated a new ICE candidate, send it to others
-    pc.onicecandidate = function(event)
+    var pc = peers[uid] = new RTCPeerConnection(
     {
-      if(!event.candidate)
-        return
-
-      // Send the offer only for the incoming channel
-      if(incomingChannel)
-         incomingChannel.sendCandidate(uid, event.candidate)
-
-      // Send the offer throught all the peers
-      else
-      {
-        var channels = self.getChannels()
-
-        // Send the connection offer to the other connected peers
-        for(var channel_id in channels)
-          channels[channel_id].sendCandidate(uid, event.candidate)
-      }
-    }
+      iceServers: [{url: 'stun:'+stun_server}]
+    });
     pc.onstatechange = function(event)
     {
+      console.warn("PeerConnection "+event.target.readyState)
+      console.warn("PeerConnection "+event.target.iceConnectionState)
+
       // Remove the peer from the list of peers when gets closed
       if(event.target.readyState == 'closed')
         delete peers[uid];
@@ -314,25 +77,20 @@ function PeersManager(db, stun_server)
 
     channels[uid] = channel
 
-    Transport_init(channel);
+    _priv.Transport_Routing_init(channel, self);
 
-    Transport_Host_init(channel, db);
-    Transport_Peer_init(channel, db, self);
-    Transport_Routing_init(channel, self);
-    Transport_Search_init(channel, db, self);
-
-    self.addEventListener('file.added', function(event)
+    channel.onclose = function()
     {
-      var fileentry = event.data[0];
+      delete pc._channel;
 
-      channel._send_file_added(fileentry);
-    });
-    self.addEventListener('file.deleted', function(event)
-    {
-      var fileentry = event.data[0];
+      pc.close();
+    };
 
-      channel._send_file_deleted(fileentry);
-    });
+    var event = document.createEvent("Event");
+        event.initEvent('channel',true,true);
+        event.channel = channel
+
+    self.dispatchEvent(event);
   }
 
 
@@ -353,18 +111,19 @@ function PeersManager(db, stun_server)
       peer = createPeerConnection(uid);
       peer.ondatachannel = function(event)
       {
-        console.log('Created datachannel with peer ' + uid);
+        console.log('Created datachannel (ondatachannel) with peer ' + uid);
         initDataChannel(peer, event.channel, uid);
       };
       peer.onerror = function(event)
       {
         if(onerror)
-          onerror(uid, event);
+           onerror(uid, event);
       };
     }
 
     // Process offer
-    peer.setRemoteDescription(new RTCSessionDescription({
+    peer.setRemoteDescription(new RTCSessionDescription(
+    {
       sdp: sdp,
       type: 'offer'
     }));
@@ -421,9 +180,8 @@ function PeersManager(db, stun_server)
   }  
 
   // Init handshake manager
-  var handshakeManager = new HandshakeManager('json/handshake.json', this);
-
-  handshakeManager.onerror = function(event)
+  var handshakeManager = new _priv.HandshakeManager(handshake_servers_file, this);
+  handshakeManager.onerror = function(error)
   {
     console.error(event);
     alert(event);
@@ -432,14 +190,17 @@ function PeersManager(db, stun_server)
   {
     var event = document.createEvent("Event");
         event.initEvent('uid',true,true);
-        event.data = [self.uid]
+        event.uid = self.uid
 
     self.dispatchEvent(event);
 
 //    // Restart downloads
-//    db.files_getAll(null, function(filelist)
+//    db.files_getAll(null, function(error, filelist)
 //    {
-//      if(filelist.length)
+//      if(error)
+//        console.error(error)
+
+//      else if(filelist.length)
 //        policy(function()
 //        {
 //          for(var i=0, fileentry; fileentry=filelist[i]; i++)
@@ -453,12 +214,11 @@ function PeersManager(db, stun_server)
    * Connects to another peer based on its UID. If we are already connected,
    * it does nothing.
    * @param {UUID} uid Identifier of the other peer to be connected.
-   * @param {Function} onsuccess Callback called when the connection was done.
-   * @param {Function} onerror Callback called when connection was not possible.
    * @param {MessageChannel} incomingChannel Optional channel where to
+   * @param {Function(error, channel)} cb Callback
    * send the offer. If not defined send it to all connected peers.
    */
-  this.connectTo = function(uid, onsuccess, onerror, incomingChannel)
+  this.connectTo = function(uid, incomingChannel, cb)
   {
     // Search the peer between the list of currently connected peers
     var channel = channels[uid];
@@ -483,14 +243,27 @@ function PeersManager(db, stun_server)
       if(onsuccess)
         channel.addEventListener('open', function(event)
         {
-          onsuccess(event.target)
-        })
-
-      if(onerror)
-        channel.onerror = function(event)
+          console.log('Created datachannel (open) with peer ' + uid);
+          initDataChannel(peer, channel, uid);
+        });
+        if(cb)
         {
-          onerror(uid, peer, event.target)
+          channel.addEventListener('open', function(event)
+          {
+            cb(null, uid);
+          });
+          channel.onerror = function(event)
+          {
+            cb({uid: uid, peer:peer, channel:channel});
+          };
         }
+      };
+
+      if(cb)
+        peer.onerror = function(event)
+        {
+          cb({uid: uid, peer:peer});
+        };
 
       // Send offer to new PeerConnection
       peer.createOffer(function(offer)
@@ -518,18 +291,23 @@ function PeersManager(db, stun_server)
       });
     }
 
-    // Peer is connected and we have defined an 'onsucess' callback
-    else if(onsuccess)
+    // PeerConnection is connected but channel not created
+    else if(!peer._channel)
+      alert('PeerConnection is connected but channel not created, please wait'+
+            'some more seconds')
+
+    // Channel is created and we have defined an 'onsucess' callback
+    else if(cb)
     {
-      // Channel is ready
-      if(channel.readyState == 'open')
-        onsuccess(channel)
+      // Channel is open
+      if(peer._channel.readyState == 'open')
+        cb(null, uid);
 
       // Channel is not ready, call the callback when it's opened
       else
         channel.addEventListener('open', function(event)
         {
-          onsuccess(event.target)
+          cb(null, uid);
         })
     }
   }
@@ -567,35 +345,7 @@ function PeersManager(db, stun_server)
       this.dispatchEvent(event);
     }
   };
-
-
-  this.files_downloading = function(onsuccess)
-  {
-    db.files_getAll(null, function(filelist)
-    {
-      var downloading = [];
-
-      for(var i = 0, fileentry; fileentry = filelist[i]; i++)
-        if(fileentry.bitmap)
-          downloading.push(fileentry);
-
-        // Update Downloading files list
-        onsuccess(downloading);
-    });
-  };
-
-  this.files_sharing = function(onsuccess)
-  {
-    db.files_getAll(null, function(filelist)
-    {
-      var sharing = []
-
-      for(var i=0, fileentry; fileentry=filelist[i]; i++)
-        if(!fileentry.bitmap)
-          sharing.push(fileentry)
-
-      // Update Sharing files list
-      onsuccess(sharing)
-    })
-  }
 }
+
+return module
+})(webp2p || {})

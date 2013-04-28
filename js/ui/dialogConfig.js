@@ -1,4 +1,7 @@
-function DialogConfig(dialogId, options, webp2p)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.DialogConfig = function(dialogId, options, shareit)
 {
   var self = this;
 
@@ -32,7 +35,7 @@ function DialogConfig(dialogId, options, webp2p)
   // Sharedpoints tab
 
   // Sharedpoints table
-  var tableSharedpoints = new TableSharedpoints('Sharedpoints',
+  var tableSharedpoints = new _priv.TableSharedpoints('Sharedpoints',
   function(fileentry)
   {
     return function()
@@ -44,9 +47,12 @@ function DialogConfig(dialogId, options, webp2p)
   function sharedpoints_update()
   {
     // Get shared points and init them with the new ones
-    webp2p.sharedpointsManager_getSharedpoints(function(sharedpoints)
+    shareit.sharedpointsManager_getSharedpoints(function(error, sharedpoints)
     {
-      tableSharedpoints.update(sharedpoints);
+      if(error)
+        console.error(error)
+      else
+        tableSharedpoints.update(sharedpoints);
     });
   }
 
@@ -64,6 +70,15 @@ function DialogConfig(dialogId, options, webp2p)
   $('#Preferences2').click(this.preferencesDialogOpen);
 
 
+  function sharedpoint_added(error)
+  {
+    if(error)
+      console.warn(error);
+
+    else
+      $(self).trigger('sharedpoints.update');
+  }
+
   // Add sharedpoint
   var input = dialog.find('#files');
 
@@ -73,14 +88,7 @@ function DialogConfig(dialogId, options, webp2p)
 
     policy(function()
     {
-      webp2p.sharedpointsManager_addSharedpoint_Folder(files, function()
-      {
-        $(self).trigger('sharedpoints.update');
-      },
-      function()
-      {
-        console.warn('Sharedpoint already defined');
-      });
+      shareit.sharedpointsManager_add('FileList', files, sharedpoint_added);
 
       // Reset the input after send the files to hash
       input.val('');
@@ -93,6 +101,30 @@ function DialogConfig(dialogId, options, webp2p)
   });
 
 
+  var dropzone = document.getElementById('Sharedpoints-tab');
+
+  dropzone.ondrop = function(event)
+  {
+    console.log("Drop")
+
+    var items = e.dataTransfer.items
+
+    for(var i=0; i<items.length; i++)
+    {
+      var entry = items[i].webkitGetAsEntry();
+
+      if(entry.isDirectory)
+        policy(function()
+        {
+          shareit.sharedpointsManager_add('Entry', entry, sharedpoint_added);
+        });
+
+      else
+        console.warn("Entry type (mainly file) for "+entry.name+
+                     " unsupported as sharedpoint")
+    }
+  };
+
   // Backup tab
 
   // Export
@@ -100,12 +132,12 @@ function DialogConfig(dialogId, options, webp2p)
   {
     policy(function()
     {
-      webp2p.cacheBackup_export(function(blob)
+      shareit.cacheBackup_export(function(blob)
       {
         if(blob)
         {
           var date = new Date();
-          var name = 'WebP2P-CacheBackup_' + date.toISOString() + '.zip';
+          var name = 'ShareIt-CacheBackup_' + date.toISOString() + '.zip';
 
           savetodisk(blob, name);
         }
@@ -129,7 +161,7 @@ function DialogConfig(dialogId, options, webp2p)
 
     policy(function()
     {
-      webp2p.cacheBackup_import(file);
+      shareit.cacheBackup_import(file);
 
       // Reset the input after got the backup file
       input.val('');
@@ -146,3 +178,6 @@ function DialogConfig(dialogId, options, webp2p)
     input.click();
   });
 }
+
+return module
+})(ui || {})

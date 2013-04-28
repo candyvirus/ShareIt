@@ -1,9 +1,11 @@
-function MenuTools(menuId)
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
+_priv.MenuTools = function(menuId)
 {
   var submenu_active = false;
 
   var menu = $('#' + menuId);
-
   menu.mouseenter(function()
   {
     submenu_active = true;
@@ -47,3 +49,6 @@ function MenuTools(menuId)
       submenu.slideUp();
   });
 }
+
+return module
+})(ui || {})

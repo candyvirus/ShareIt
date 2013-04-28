@@ -28,9 +28,11 @@ The purpose of each folder is:
 * js: ShareIt! common Javascript files
 * js/polyfills: shims to add compatibility with old browsers. This folder should
                 be remoded in the future.
+* js/shareit-core: ShareIt! core. This eventually will become an independent
+                   project in the future.
 * js/ui: user interface widgets code.
-* js/webp2p: ShareIt! core and implementation of the webp2p protocol.
-             This eventually will become an independent project in the future.
+* js/webp2p: Implementation of the webp2p protocol. This eventually will become
+             an independent project in the future.
 * json: configuration files in JSON format (currently only handshake servers)
 * lib: local copies of external libraries, required by FirefoxOS policies and
        also to make AppCache to work correctly

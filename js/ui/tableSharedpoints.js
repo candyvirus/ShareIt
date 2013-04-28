@@ -1,10 +1,13 @@
+var ui = (function(module){
+var _priv = module._priv = module._priv || {}
+
 function No_FileReader()
 {
   $('#Sharedpoints').html('Your browser is not modern enough to serve as a host. :(<br /><br />(Try Chrome or Firefox!)');
 }
 
 
-function TableSharedpoints(tableId, onclickFactory)
+_priv.TableSharedpoints = function(tableId, onclickFactory)
 {
   var table = document.getElementById(tableId);
   this.tbody = table.getElementsByTagName('tbody')[0];
@@ -13,8 +16,8 @@ function TableSharedpoints(tableId, onclickFactory)
   function noFilesCaption()
   {
     // Compose no files shared content (fail-back)
-    var cell = spanedCell(table);
-        cell.appendChild(document.createTextNode('There are no shared points. '));
+    var cell = _priv.spanedCell(table);
+    cell.appendChild(document.createTextNode('There are no shared points. '));
 
     var anchor = document.createElement('A');
         anchor.style.cursor = 'pointer';
@@ -40,6 +43,7 @@ function TableSharedpoints(tableId, onclickFactory)
   function rowFactory(fileentry)
   {
     var tr = document.createElement('TR');
+    tr.setAttribute('data-tt-id',"");  // Hack for new TreeTable detection mechanism, should not be necesary
 
     var td = document.createElement('TD');
     tr.appendChild(td);
@@ -97,4 +101,7 @@ function TableSharedpoints(tableId, onclickFactory)
     }
   };
 }
-TableSharedpoints.prototype = FilesTable;
+_priv.TableSharedpoints.prototype = _priv.FilesTable;
+
+return module
+})(ui || {})
