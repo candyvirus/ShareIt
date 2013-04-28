@@ -150,9 +150,9 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
       // Duplicates
       if(fileentry.duplicates)
       {
-        tr_file.setAttribute('data-tt-id', parent
-                                         ? parent+"/"+fileentry.name
-                                         : fileentry.name);
+        var id = parent ? parent+"/"+fileentry.name : fileentry.name
+
+        tr_file.setAttribute('data-tt-id', id);
 
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
@@ -160,7 +160,7 @@ _priv.TabSharing = function(tableId, preferencesDialogOpen)
         {
           var tr = document.createElement('TR');
               tr.setAttribute('data-tt-id', "");
-              tr.setAttribute('data-tt-parent-id', parent+"/"+fileentry.name);
+              tr.setAttribute('data-tt-parent-id', id);
 
           var td = document.createElement('TD');
           td.colSpan = 3
