@@ -2,11 +2,11 @@ var ui = (function(module, shareit){
 var _priv = module._priv = module._priv || {}
 
 
-_priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
+_priv.TabSearch = function(query, tabsId, onclickFactory)
 {
   // Tabs
   var div = document.createElement('DIV');
-      div.id = tabsId + '-' + uid;
+      div.id = tabsId + '-' + query;
       div.dataset.role = 'page'
       div.setAttribute('data-add-back-btn', true);
 
@@ -21,7 +21,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
         header.setAttribute('class', 'only-mobile');
 
     var h1 = document.createElement('H1');
-        h1.appendChild(document.createTextNode('UID: ' + uid));
+        h1.appendChild(document.createTextNode('Search: ' + query));
 
     $(h1).appendTo(header);
 
@@ -29,8 +29,8 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   }
   else
   {
-    $('#tabs').tabs('refresh');
-    $('#tabs').tabs('option', 'active', -1);
+    $('#'+tabsId).tabs('refresh');
+    $('#'+tabsId).tabs('option', 'active', -1);
   }
 
   // Table
@@ -58,9 +58,21 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   tr.appendChild(th);
 
   var th = document.createElement('TH');
-      th.scope = 'col';
-      th.abbr = 'Size';
-      th.appendChild(document.createTextNode('Size'));
+    th.scope = 'col';
+    th.abbr = 'Size';
+    th.appendChild(document.createTextNode('Size'));
+  tr.appendChild(th);
+
+  var th = document.createElement('TH');
+    th.scope = 'col';
+    th.abbr = 'Score';
+    th.appendChild(document.createTextNode('Score'));
+  tr.appendChild(th);
+
+  var th = document.createElement('TH');
+    th.scope = 'col';
+    th.abbr = 'Copies';
+    th.appendChild(document.createTextNode('Copies'));
   tr.appendChild(th);
 
   var th = document.createElement('TH');
@@ -76,9 +88,9 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   this.tbody.appendChild(tr);
 
   var td = document.createElement('TD');
-      td.colSpan = 4;
+      td.colSpan = 6;
       td.align = 'center';
-      td.appendChild(document.createTextNode('Waiting for the peer data'));
+      td.appendChild(document.createTextNode('Searching...'));
   tr.appendChild(td);
 
 
@@ -88,20 +100,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   {
     // Compose no files shared content (fail-back)
     var captionCell = _priv.spanedCell(table);
-    captionCell.appendChild(document.createTextNode('Remote peer is not sharing files.'));
-
-//    var anchor = document.createElement('A')
-//        anchor.id = 'ConnectUser'
-//        anchor.style.cursor = 'pointer'
-//    captionCell.appendChild(anchor)
-//
-//    $(anchor).click(preferencesDialogOpen)
-//
-//    var span = document.createElement('SPAN')
-//        span.setAttribute("class", "user")
-//        span.appendChild(document.createTextNode("Connect to a user"))
-//    anchor.appendChild(span)
-    captionCell.appendChild(document.createTextNode(" Why don't ask him about doing it?"));
+        captionCell.appendChild(document.createTextNode('No files found.'));
 
     return captionCell;
   }
@@ -139,6 +138,20 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
         td.appendChild(document.createTextNode(humanize.filesize(size)));
     tr.appendChild(td);
 
+    // Score
+    var td = document.createElement('TD');
+        td.appendChild(document.createTextNode(fileentry.score.toFixed(2)));
+    tr.appendChild(td);
+
+    // Copies
+    var duplicates = 1
+    if(fileentry.duplicates)
+      duplicates += fileentry.duplicates.length
+
+    var td = document.createElement('TD');
+        td.appendChild(document.createTextNode(duplicates));
+    tr.appendChild(td);
+
     // Action
     var td = document.createElement('TD');
         td.class = 'end';
@@ -150,79 +163,60 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
 
   this.updateFiles = function(fileslist)
   {
-    var prevPath = '';
-
-    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
+    for(var i = 0; i<fileslist.length; i++)
     {
-      // Folder
-      var path = fileentry.path;
-
-      if(path && prevPath != path)
-      {
-        prevPath = path;
-
-        this.tbody.appendChild(_priv.rowFolder(path, 4));
-      }
+      var fileentry = fileslist[i]
 
       // Fileentry
       var tr_file = rowFileentry(fileentry);
       this.tbody.appendChild(tr_file);
 
-      if(prevPath)
-        tr_file.setAttribute('data-tt-parent-id', prevPath);
-
       // Duplicates
-      if(fileentry.duplicates)
+      var duplicates = fileentry.duplicates
+      if(duplicates)
       {
-        tr_file.setAttribute('data-tt-id', prevPath
-                                         ? prevPath+"/"+fileentry.name
-                                         : fileentry.name);
+        tr_file.setAttribute('data-tt-id', fileentry.name);
 
         tr_file.setAttribute('data-tt-initialState', "collapsed");
 
-        for(var j = 0, duplicate; duplicate = fileentry.duplicates[j]; j++)
+        for(var j = 0; j<duplicates.length; j++)
         {
+          var duplicate = duplicates[j]
+
           var tr = document.createElement('TR');
               tr.setAttribute('data-tt-id', "");
-              tr.setAttribute('data-tt-parent-id', prevPath+"/"+fileentry.name);
+              tr.setAttribute('data-tt-parent-id', fileentry.name);
 
           var td = document.createElement('TD');
-              td.colSpan = 4
+              td.colSpan = 6
 
-          var fullpath = ""
+          // Name & icon
+          var a = document.createElement('A');
+              a.onclick = function()
+              {
+                // Swap names
+                var aux = fileentry.name
+                fileentry.name = duplicate.name
+                duplicate.name = aux
 
-          // Peer
-          if(duplicate.peer)
-            fullpath += '['+duplicate.peer+']'
+                // Update fileentry row
+                var span = tr_file.cells[0].childNodes[1]
+                span.childNodes[0].nodeValue = fileentry.name
 
-          // Sharedpoint
-          if(duplicate.sharedpoint)
-            fullpath += '/'+duplicate.sharedpoint
+                // Update duplicate row
+                this.childNodes[0].nodeValue = duplicate.name
+              }
 
-          // Path
-          if(duplicate.path)
-          {
-            if(fullpath)
-               fullpath += '/'
-            fullpath += duplicate.path
-          }
-
-          // Name
-          if(fullpath)
-             fullpath += '/'
-          fullpath += duplicate.name
-
-          td.appendChild(document.createTextNode(fullpath));
-
+          a.appendChild(document.createTextNode(duplicate.name));
+          td.appendChild(a);
           tr.appendChild(td);
+          this.tbody.appendChild(tr);
         }
-
-        this.tbody.appendChild(tr);
       }
     }
   };
 }
-_priv.TabPeer.prototype = _priv.FilesTable;
+_priv.TabSearch.prototype = _priv.FilesTable;
 
 return module
 })(ui || {}, shareit)

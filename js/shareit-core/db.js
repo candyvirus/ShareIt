@@ -24,9 +24,10 @@ _priv.DB_init = function(onsuccess)
     // be unique.
     var files = db.createObjectStore('files',
     {
-      keyPath: ["sharedpoint", "path", "name"]
+      keyPath: ["peer", "sharedpoint", "path", "name"]
     });
-    files.createIndex("by_hash", "hash", {unique: false})
+    files.createIndex("byHash", "hash", {unique: false})
+    files.createIndex("byPeer", "peer", {unique: false})
   }
 
   var request = indexedDB.open('ShareIt', version);
@@ -288,33 +289,16 @@ _priv.DB_init = function(onsuccess)
     };
 
     /**
-     * Get a {Fileentry}
-     * @param {String} key {Fileentry} to be gotten.
-     * @param {Function} onsuccess Callback called when the {Fileentry}
-     * was gotten.
-     * @param {Function} onerror Callback called when the {Fileentry}
+     * Get a {Sharedpoint}
+     * @param {String} key {Sharedpoint} to be gotten.
+     * @param {Function} onsuccess Callback called when the
+     * {Sharedpoint} was gotten.
+     * @param {Function} onerror Callback called when the {Sharedpoint}
      * was not able to be gotten.
      */
     db.files_get = function(key, callback)
     {
-//      db._get('files', key, callback);
-
-      var transaction = db.transaction('files', 'readonly');
-      var objectStore = transaction.objectStore('files');
-      var index = objectStore.index("by_hash");
-
-      var request = index.get(key);
-      if(callback)
-      {
-        request.onsuccess = function(event)
-        {
-          callback(null, request.result);
-        };
-        request.onerror = function(event)
-        {
-          callback(event.target.errorCode);
-        };
-      }
+      db._get('files', key, callback);
     };
 
     /**
@@ -328,6 +312,60 @@ _priv.DB_init = function(onsuccess)
     db.files_getAll = function(range, callback)
     {
       db._getAll('files', range, callback);
+    };
+
+    db.files_getAll_byHash = function(uid, callback)
+    {
+      var result = []
+
+      var transaction = db.transaction('files', 'readonly');
+      var objectStore = transaction.objectStore('files');
+      var index = objectStore.index("byHash");
+
+      var request = index.openCursor(uid);
+
+      request.onsuccess = function(event)
+      {
+        var cursor = event.target.result;
+        if(cursor)
+        {
+          result.push(cursor.value);
+          cursor.continue();
+        }
+        else
+          callback(null, result);
+      };
+      request.onerror = function(event)
+      {
+        callback(event.target.errorCode);
+      };
+    };
+
+    db.files_getAll_byPeer = function(uid, callback)
+    {
+      var result = []
+
+      var transaction = db.transaction('files', 'readonly');
+      var objectStore = transaction.objectStore('files');
+      var index = objectStore.index("byPeer");
+
+      var request = index.openCursor(uid);
+
+      request.onsuccess = function(event)
+      {
+        var cursor = event.target.result;
+        if(cursor)
+        {
+          result.push(cursor.value);
+          cursor.continue();
+        }
+        else
+          callback(null, result);
+      };
+      request.onerror = function(event)
+      {
+        callback(event.target.errorCode);
+      };
     };
 
     /**

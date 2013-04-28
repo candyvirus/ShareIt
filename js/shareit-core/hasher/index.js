@@ -16,7 +16,6 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
   /**
    * Refresh hashes after one hour
    */
-
   function updateTimeout()
   {
     clearTimeout(timeout);
@@ -31,7 +30,6 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
    * Delete a {Fileentry} (mainly because it was removed from the filesystem)
    * @param {Fileentry} fileentry {Fileentry} to be removed from database.
    */
-
   function fileentry_delete(fileentry)
   {
     // Remove file from the database
@@ -50,11 +48,10 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
    * Set a {Fileentry} as hashed and store it on the database
    * @param {Fileentry} fileentry {Fileentry} to be added to the database.
    */
-
   function fileentry_hashed(fileentry)
   {
     // Remove hashed file from the queue
-    queue.splice(queue.indexOf(fileentry.file));
+    queue.splice(queue.indexOf(fileentry));
 
     /**
      * Add file to the database
@@ -62,6 +59,7 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
 
     function addFile(fileentry)
     {
+      fileentry.peer = ""  // File is shared by us
       fileentry.name = fileentry.file.name
 
       db.files_put(fileentry, function(error, result)
@@ -118,51 +116,27 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
    * Hash the files from a {Sharedpoint}.
    * @param {Array} files List of files to be hashed.
    */
-  this.hash = function(files, sharedpoint_name)
+  this.hash = function(fileentry)
   {
+    // File has zero size
+    if(!fileentry.file.size)
+    {
+      // Precalculated hash for zero sized files
+      fileentry.hash = 'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==',
+
+      fileentry_hashed(fileentry);
+
+      return
+    }
+
     // Ignore files that are already on the queue
     for(var j = 0, q; q = queue[j]; j++)
-      for(var i = 0, sp; sp = files[i];)
-      {
-        // File has zero size
-        if(!sp.size)
-        {
-          // Precalculated hash for zero sized files
-          sp.hash = 'z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==';
-          fileentry_hashed(sp);
+      if(fileentry.file == q)
+        return;
 
-          files.splice(i);
-        }
-
-      // File is already on the queue list
-        else if(sp == q)
-          files.splice(i);
-
-      // Normal file, hash it
-        else i++;
-      }
-
-      // If any file was not on the queue, hash it
-      if(files.length)
-      {
-        files = Array.prototype.slice.call(files);
-        queue = queue.concat(files);
-
-
-        // Run over all the files on the queue and process them
-        for(var i = 0, file; file = files[i]; ++i)
-        {
-          var path = file.webkitRelativePath.split('/').slice(1, -1).join('/');
-          var fileentry =
-          {
-            'sharedpoint': sharedpoint_name,
-            'path': path,
-            'file': file
-          };
-
-          worker.postMessage(['hash', fileentry]);
-        }
-      }
+    // Hash the file
+    queue.push(fileentry);
+    worker.postMessage(['hash', fileentry]);
   };
 
   /**
@@ -213,10 +187,6 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
             // Sharedpoint was removed, remove the file from database
             if(!sharedpoint_exist(fileentry.sharedpoint.name))
               fileentry_delete(fileentry);
-
-          // File is a real filesystem one, rehash it
-            else if(fileentry.file)
-              worker.postMessage(['refresh', fileentry]);
           }
 
           // Update timeout for the next refresh walkabout
@@ -227,9 +197,6 @@ _priv.Hasher = function(db, policy, sharedpointsManager)
       });
     });
   };
-
-  // Start hashing new files from the shared points on load
-//  self.refresh()
 }
 
 return module

@@ -44,7 +44,7 @@ _priv.TabDownloading = function(tableId, preferencesDialogOpen)
 
     // Name & icon
     var span = document.createElement('SPAN');
-    span.className = _priv.filetype2className(fileentry.type);
+    span.className = _priv.filetype2className(fileentry.blob.type);
     span.appendChild(document.createTextNode(fileentry.name));
     td.appendChild(span);
 
@@ -145,7 +145,7 @@ _priv.TabDownloading = function(tableId, preferencesDialogOpen)
     }
 
     // Fill the table
-    FilesTable.update.call(this, fileslist);
+    _priv.FilesTable.update.call(this, fileslist);
   };
 }
 _priv.TabDownloading.prototype = _priv.FilesTable;

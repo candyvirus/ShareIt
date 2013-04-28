@@ -14,18 +14,42 @@ _priv.FilesManager = function(db, peersManager)
 
   var self = this;
 
+  // Init hasher
+  var hasher = new _priv.Hasher(db, policy, this);
+  hasher.onhashed = function(fileentry)
+  {
+    // Notify the other peers about the new hashed file
+    self._send_file_added(fileentry);
+  };
+  hasher.ondeleted = function(fileentry)
+  {
+    // Notify the other peers about the deleted file
+    self._send_file_deleted(fileentry);
+  };
+
 
   /**
    * Get the channel of one of the peers that have the file from its hash.
-   * Since the hash and the tracker system are currently not implemented we'll
-   * get just the channel of the peer where we got the file that we added
-   * ad-hoc before
+   * 
    * @param {Fileentry} Fileentry of the file to be downloaded.
    * @return {RTCDataChannel} Channel where we can ask for data of the file.
    */
-  function getChannel(fileentry)
+  function getChannel(hash, cb)
   {
-    return fileentry.channel;
+    db.files_getAll_byHash(hash, function(error, fileentries)
+    {
+      for(var i=0, fileentry; fileentry=fileentries[i]; i++)
+        if(fileentry.peer != "")
+        {
+          var channels = peersManager.getChannels()
+
+          cb(null, channels[fileentry.peer]);
+
+          return
+        }
+
+      cb("No available peers to finish downloading the file");
+    })
   }
 
   /**
@@ -34,10 +58,18 @@ _priv.FilesManager = function(db, peersManager)
    */
   function transfer_query(fileentry)
   {
-    var channel = getChannel(fileentry);
-    var chunk = fileentry.bitmap.getRandom(false);
+    getChannel(fileentry.hash, function(error, channel)
+    {
+      if(error)
+        console.error(error)
 
-    channel.transfer_query(fileentry, chunk);
+      else
+      {
+        var chunk = fileentry.bitmap.getRandom(false);
+
+        channel.transfer_query(fileentry, chunk);
+      }
+    });
   }
 
 
@@ -62,6 +94,14 @@ _priv.FilesManager = function(db, peersManager)
 
       channel._send_file_deleted(fileentry);
     });
+
+    // Quick hack for search
+    var SEND_UPDATES = 1;
+//    var SMALL_FILES_ACCELERATOR = 2
+    var flags = SEND_UPDATES;
+//    if()
+//      flags |= SMALL_FILES_ACCELERATOR
+    channel.fileslist_query(flags)
   })
 
 
@@ -76,19 +116,28 @@ _priv.FilesManager = function(db, peersManager)
       console.error("Transfer begin: '" + fileentry.name + "' is already in database.");
     }
 
-    fileentry.sharedpoint = ""
+    // Create a new fileentry
+    var new_fileentry =
+    {
+      peer: "",
+      sharedpoint: "",
+      path: fileentry.path,
+      name: fileentry.name,
+
+      hash: fileentry.hash
+    }
 
     // Add a blob container to our file stub
-    fileentry.blob = new Blob([''],
+    new_fileentry.blob = new Blob([''],
     {
-      'type': fileentry.type
+      type: fileentry.type
     });
 
     // File size is zero, generate the file instead of request it
     if(!fileentry.size)
     {
       // Insert new empty "file" inside IndexedDB
-      db.files_add(fileentry, function(error, fileentry)
+      db.files_add(new_fileentry, function(error, fileentry)
       {
         if(error)
           onerror(error)
@@ -106,10 +155,10 @@ _priv.FilesManager = function(db, peersManager)
     if(chunks % 1 != 0)
        chunks = Math.floor(chunks) + 1;
 
-    fileentry.bitmap = new Bitmap(chunks);
+    new_fileentry.bitmap = new Bitmap(chunks);
 
     // Insert new "file" inside IndexedDB
-    db.files_add(fileentry, function(error, fileentry)
+    db.files_add(new_fileentry, function(error, fileentry)
     {
       if(error)
         onerror(error)
@@ -130,7 +179,7 @@ _priv.FilesManager = function(db, peersManager)
 
   this.transfer_update = function(fileentry, pending_chunks)
   {
-    var chunks = fileentry.size / module.chunksize;
+    var chunks = fileentry.blob.size / module.chunksize;
     if(chunks % 1 != 0)
        chunks = Math.floor(chunks) + 1;
 
@@ -234,33 +283,6 @@ _priv.FilesManager = function(db, peersManager)
         event.fileentry = fileentry
 
     this.dispatchEvent(event);
-
-    // Update fileentry sharedpoint size
-    db.sharepoints_get(fileentry.sharedpoint, function(error, sharedpoint)
-    {
-      if(error)
-        console.error(error)
-
-      else
-      {
-        // Increase sharedpoint shared size
-        sharedpoint.size += fileentry.file.size;
-
-        db.sharepoints_put(sharedpoint, function(error, sharedpoint)
-        {
-          if(error)
-            console.error(error)
-
-          else
-          {
-            var event = document.createEvent("Event");
-                event.initEvent('sharedpoints.update',true,true);
-
-            self.dispatchEvent(event);
-          }
-        });
-      }
-    });
   };
 
   /**
@@ -274,33 +296,6 @@ _priv.FilesManager = function(db, peersManager)
         event.fileentry = fileentry
 
     this.dispatchEvent(event);
-
-    // Update fileentry sharedpoint size
-    db.sharepoints_get(fileentry.sharedpoint, function(error, sharedpoint)
-    {
-      if(error)
-        console.error(error)
-
-      else
-      {
-        // Increase sharedpoint shared size
-        sharedpoint.size -= fileentry.file.size;
-
-        db.sharepoints_put(sharedpoint, function(error, sharedpoint)
-        {
-          if(error)
-            console.error(error)
-
-          else
-          {
-            var event = document.createEvent("Event");
-                event.initEvent('sharedpoints.update',true,true);
-
-            self.dispatchEvent(event);
-          }
-        });
-      }
-    });
   };
 
 
@@ -327,7 +322,7 @@ _priv.FilesManager = function(db, peersManager)
 
   this.files_sharing = function(cb)
   {
-    db.files_getAll(null, function(error, filelist)
+    db.files_getAll_byPeer("", function(error, fileslist)
     {
       if(error)
         console(error)
@@ -336,14 +331,42 @@ _priv.FilesManager = function(db, peersManager)
       {
         var sharing = []
 
-        for(var i=0, fileentry; fileentry=filelist[i]; i++)
+        // [ToDo] Use parallice
+        for(var i=0, fileentry; fileentry=fileslist[i]; i++)
           if(!fileentry.bitmap)
-            sharing.push(fileentry)
+            db.files_getAll_byHash(fileentry.hash, function(error, fileentries)
+            {
+              var duplicates = []
+
+              // Only add local (shared) duplicates
+              for(var i=0, entry; entry=fileentries[i]; i++)
+                if(fileentry.peer        == entry.peer
+                &&(fileentry.sharedpoint != entry.sharedpoint
+                || fileentry.path        != entry.path
+                || fileentry.name        != entry.name))
+                  duplicates.push(entry)
+
+              if(duplicates.length)
+                fileentry.duplicates = duplicates
+
+              sharing.push(fileentry)
+            })
 
         // Update Sharing files list
         cb(null, sharing)
       }
     })
+  }
+
+  this.add = function(fileentry)
+  {
+    hasher.hash(fileentry)
+  }
+
+  this.delete = function(fileentry)
+  {
+    db.files_delete(fileentry)
+    this._send_file_deleted(fileentry)
   }
 }
 

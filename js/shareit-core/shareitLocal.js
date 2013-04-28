@@ -19,13 +19,17 @@ module.Local = function(handshake_servers_file, onsuccess)
   // Init database
   _priv.DB_init(function(db)
   {
+    // Init files manager
     var filesManager = new _priv.FilesManager(db, peersManager)
 
     // Init cache backup system
     var cacheBackup = new _priv.CacheBackup(db, filesManager)
 
     // Init sharedpoints manager
-    var sharedpointsManager = new _priv.SharedpointsManager(db, filesManager)
+    var sharedpointsManager = new _priv.SharedpointsManager(db)
+
+    // Init search engine
+    var searchEngine = new _priv.SearchEngine(db, filesManager)
 
 
     self.cacheBackup_export = function(onfinish, onprogress, onerror)
@@ -61,14 +65,46 @@ module.Local = function(handshake_servers_file, onsuccess)
       filesManager.files_sharing(callback)
     }
 
+    self.fileslist_disableUpdates = function(uid, callback)
+    {
+      peersManager.getChannels()[uid].fileslist_disableUpdates()
+    }
+
+    self.fileslist_query = function(uid, flags, callback)
+    {
+      peersManager.getChannels()[uid].fileslist_query(flags)
+    }
+
     self.numPeers = function(callback)
     {
       callback(null, Object.keys(peersManager.getChannels()).length);
     }
 
-    self.sharedpointsManager_addSharedpoint_Folder = function(files, callback)
+    self.searchEngine_search = function(query, callback)
     {
-      sharedpointsManager.addSharedpoint_Folder(files, callback)
+      searchEngine.search(query, callback)
+    }
+
+    self.sharedpointsManager_add = function(type, root, callback)
+    {
+      var sharedpoint
+
+      switch(type)
+      {
+        case 'Entry':
+          sharedpoint = new _priv.Entry(root, db, filesManager)
+          break
+
+        case 'FileList':
+          sharedpoint = new _priv.FileList(root, db, filesManager)
+          break
+
+        default:
+          callback("Unknown sharedpoint type '"+type+"'")
+          return
+      }
+
+      sharedpointsManager.add(sharedpoint, callback)
     }
 
     self.sharedpointsManager_getSharedpoints = function(callback)
@@ -87,16 +123,18 @@ module.Local = function(handshake_servers_file, onsuccess)
 
 
     peersManager.addEventListener('error.noPeers', forwardEvent);
-    peersManager.addEventListener('uid', forwardEvent);
+    peersManager.addEventListener('uid',           forwardEvent);
 
     filesManager.addEventListener('file.added',   forwardEvent);
     filesManager.addEventListener('file.deleted', forwardEvent);
 
-    filesManager.addEventListener('sharedpoints.update', forwardEvent);
+    filesManager.addEventListener('fileslist.updated', forwardEvent);
 
     filesManager.addEventListener('transfer.begin',  forwardEvent);
     filesManager.addEventListener('transfer.end',    forwardEvent);
     filesManager.addEventListener('transfer.update', forwardEvent);
+
+    filesManager.addEventListener('sharedpoints.update', forwardEvent);
 
     if(onsuccess)
       onsuccess(self)

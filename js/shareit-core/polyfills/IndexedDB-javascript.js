@@ -91,14 +91,52 @@ function IdbJS_install()
   /**
    * @constructor
    */
-  function IDBCursor(source)
+  function IDBCursor(source, direction)
   {
     this._objects = []
-    this._index = 0
 
-    this.continue = function()
+    this._position = 0
+//    this._position = undefined
+    this._key = undefined
+    this._value = undefined
+
+    var gotValue = false
+
+    this.advance = function(count)
     {
-      this._index += 1
+      if(count == 0)
+        throw TypeError
+
+//    if(!transaction.active)
+//      throw DOMException("TransactionInactiveError");
+
+      if(!gotValue)
+        throw DOMException("InvalidStateError");
+
+      for(var i=0; i<count; i++)
+        steps_for_iterating_a_cursor(this, null)
+
+      gotValue = false
+    }
+
+    this.continue = function(key)
+    {
+//    if(!transaction.active)
+//      throw DOMException("TransactionInactiveError");
+
+//      if(!gotValue)
+//        throw DOMException("InvalidStateError");
+//
+//      if(key != undefined
+//      &&(key <= this._position && (direction == 'next' || direction == 'nextunique')
+//      || key >= this._position && (direction == 'prev' || direction == 'prevunique')))
+//        throw DOMException("DataError");
+//
+//      steps_for_iterating_a_cursor(this, key)
+//
+//      gotValue = false
+
+      this._position += 1
 
       var event = {target: {}}
       if(this.value)
@@ -106,12 +144,41 @@ function IdbJS_install()
 
       this._request._onsuccess(event)
     }
+
+    this.delete = function()
+    {
+      
+    }
+
+    this.update = function(value)
+    {
+      
+    }
+
+    this.__defineGetter__("source", function()
+    {
+      return source
+    })
+
+    this.__defineGetter__("direction", function()
+    {
+      return direction
+    })
+
+    this.__defineGetter__("primaryKey", function()
+    {
+    })
   }
   IDBCursor.prototype =
   {
+    get key()
+    {
+      return this._key
+    },
+
     get value()
     {
-      return this._objects[this._index]
+      return this._objects[this._position]
     }
   }
 
@@ -127,36 +194,159 @@ function IdbJS_install()
 
     this._delete = function(key)
     {
-      for(var index in records)
-        if(records[index][keyPath] == key)
-          delete records[index]
+      for(var path in records)
+      {
+        var key_s = JSON.stringify(key)
+
+        var record = records[path]
+        var index = record.length - 1;
+
+        for(; index>=0; index--)
+        {
+          var ref_s = JSON.stringify(record[index])
+          if(ref_s == key_s)
+            break
+        }
+        if(index < 0)
+          continue
+
+        records[path].splice(index, 1)
+
+        if(!records[path].length)
+          delete records[path]
+      }
     }
 
     this._put = function(value, key)
     {
+      function put(path, key)
+      {
+        if(optionalParameters.unique)
+        {
+          if(records[path])
+            throw DOMException("ConstraintError")
+
+          records[path] = [key]
+        }
+        else
+        {
+          records[path] = records[path] || []
+
+          records[path].push(key)
+          records[path].sort()
+        }
+      }
+
       var path = value[keyPath]
 
-      if(optionalParameters.unique)
+      if(path instanceof Array
+      && optionalParameters.multiEntry)
       {
-        if(records[path])
-          throw DOMException("DataError")
+        var keys = []
+        for(var i=0, record; record=path[i]; i++)
+        {
+          var ignore = false
 
-        records[path] = [key]
+          for(var j=0; j<keys.length; j++)
+            if(keys[j] == record)
+            {
+              ignore = true
+              break
+            }
+
+          if(!ignore)
+          {
+            keys.push(record)
+            put(record, key)
+          }
+        }
       }
       else
-      {
-        records[path] = records[path] || []
-
-        records[path].push(key)
-      }
+        put(path, key)
     }
 
     this.get = function(key)
     {
-      var key = records[key][0]
+      var request = this.getKey(key)
+          request.result = objectStore.get(request.result).result
+
+      return request
+    }
+
+    this.getKey = function(key)
+    {
+      var request = new IDBRequest()
+          request.result = records[key][0]
+
+      return request
+    }
+
+    this.openCursor = function(range, direction)
+    {
+      var request = this.openKeyCursor(range, direction)
+
+      var cursor = request.target.result
+      if(cursor)
+        for(var i=0, ref; ref=cursor._objects[i]; i++)
+          cursor._objects[i] = objectStore.get(ref).result
+
+      return request
+    }
+
+    this.openKeyCursor = function(range, direction)
+    {
+//    if(!transaction.active)
+//      throw DOMException("TransactionInactiveError");
+
+//    if()
+//      throw DOMException("InvalidStateError");
+
+//    if()
+//      throw DOMException("DataError");
+
+      direction = direction || "next"
 
       var request = new IDBRequest()
-          request.result = objectStore.get(key).result
+
+      if(Object.keys(records).length)
+      {
+        // Fill the cursor with the objectstore objects
+        var cursor = new IDBCursor(this, direction)
+
+//        function steps_for_iterating_a_cursor(cursor, key)
+//        {
+//          var source = cursor.source
+//          var records = source.records
+//          var direction = cursor.direction
+//          var position = cursor._position
+//          var objectStorePosition = cursor._objectStore._position
+//          var range = cursor._range
+//
+//          var foundRecord
+//
+//          return cursor
+//        }
+
+        function addKeys(key)
+        {
+          var refs = records[key]
+
+          if(refs)
+            for(var i=0, ref; ref=refs[i]; i++)
+              cursor._objects.push(ref)
+        }
+
+        if(range != undefined)
+          addKeys(range)
+
+        else
+          for(var key in records)
+            addKeys(key)
+
+        // Link the request and the cursor between them
+        request.target.result = cursor
+        cursor._request = request
+      }
 
       return request
     }
@@ -193,32 +383,6 @@ function IdbJS_install()
       var request = new IDBRequest()
 
       return request
-    },
-
-    getKey: function(key)
-    {
-      var request = new IDBRequest()
-
-      return request
-    },
-
-    openCursor: function(range, direction)
-    {
-      direction = direction || "next"
-
-      var cursor = new IDBCursor(this)
-      var request = new IDBRequest()
-
-      return request
-    },
-
-    openKeyCursor: function(range, direction)
-    {
-      direction = direction || "next"
-
-      var request = new IDBRequest()
-
-      return request
     }
   }
 
@@ -231,9 +395,84 @@ function IdbJS_install()
     var objects = {}
     var indexes = {}
 
+    function steps_for_extracting_a_key_from_a_value_using_a_key_path(keyPath, value)
+    {
+      if(keyPath instanceof Array)
+      {
+        var result = []
+
+        for(var i=0,item; item=keyPath[i]; i++)
+        {
+          var result2 = steps_for_extracting_a_key_from_a_value_using_a_key_path(item, value)
+          if(result2 == undefined)
+            return
+
+          result.push(result2)
+        }
+
+        return result
+      }
+
+      if(keyPath == "")
+        return value
+
+      var keyPath = keyPath.split(".")
+
+      for(var i=0, attribute; attribute=keyPath[i]; i++)
+      {
+        var aux = value[attribute]
+        if(aux == undefined)
+          return
+        value = aux
+      }
+
+      return value
+    }
+
+    function steps_for_storing_a_record_into_an_object_store(store, value, key, no_overwrite)
+    {
+      if(keyPath)
+        key = steps_for_extracting_a_key_from_a_value_using_a_key_path(keyPath, value)
+
+      if(!key)
+        throw DOMException("DataError")
+
+      if(no_overwrite && objects[key])
+        throw DOMException(0, "ConstraintError")
+
+      steps_for_deleting_records_from_an_object_store(store, key)
+
+      objects[key] = value
+
+      for(var name in indexes)
+        indexes[name]._put(value, key)
+
+      return key
+    }
+
+    function steps_for_deleting_records_from_an_object_store(store, key)
+    {
+//      var range = key
+
+      delete objects[key]
+      for(var name in indexes)
+        indexes[name]._delete(key)
+    }
+
     this.add = function(value, key)
     {
-      return this.put(value, key)
+//      if(transaction.mode == "readonly")
+//        throw DOMException("ReadOnlyError");
+
+      if(this.keyPath && key)
+        throw DOMException("DataError")
+
+      steps_for_storing_a_record_into_an_object_store(this, value, key, true)
+
+      var request = new IDBRequest()
+          request.result = value
+
+      return request
     }
 
     this.clear = function()
@@ -264,6 +503,7 @@ function IdbJS_install()
 //      if(transaction.mode != "versionchange")
 //        throw DOMException("InvalidStateError");
 
+      // an index with the same name already exists in the object store
       if(indexes[name])
         throw DOMException("ConstraintError");
 
@@ -291,9 +531,7 @@ function IdbJS_install()
 
     this.delete = function(key)
     {
-      delete objects[key]
-      for(var name in indexes)
-        indexes[name]._delete(key)
+      steps_for_deleting_records_from_an_object_store(this, key)
 
       return new IDBRequest()
     }
@@ -319,14 +557,16 @@ function IdbJS_install()
       return indexes[name]
     }
 
-    this.openCursor = function(range)
+    this.openCursor = function(range, direction)
     {
+      direction = direction || "next"
+
       var request = new IDBRequest()
 
       if(Object.keys(objects).length)
       {
         // Fill the cursor with the objectstore objects
-        var cursor = new IDBCursor()
+        var cursor = new IDBCursor(this, direction)
         for(var key in objects)
           cursor._objects.push(objects[key])
 
@@ -343,54 +583,10 @@ function IdbJS_install()
 //      if(transaction.mode == "readonly")
 //        throw DOMException("ReadOnlyError");
 
-      if(this.keyPath)
-      {
-        if(key)
-          throw DOMException("DataError")
-
-        function extract_key_from_value_using_keyPath(value, keyPath)
-        {
-          if(keyPath instanceof Array)
-          {
-            var result = []
-
-            for(var i=0,item; item=keyPath[i]; i++)
-            {
-              var result2 = extract_key_from_value_using_keyPath(value, item)
-              if(result2 == undefined)
-                return
-
-              result.push(result2)
-            }
-
-            return result
-          }
-
-          if(keyPath == "")
-            return value
-
-          var keyPath = keyPath.split(".")
-
-          for(var i=0, identifier; identifier=keyPath[i]; i++)
-          {
-            var aux = value[identifier]
-            if(aux == undefined)
-              return
-            value = aux
-          }
-
-          return value
-        }
-
-        key = extract_key_from_value_using_keyPath(value, this.keyPath)
-      }
-
-      if(!key)
+      if(this.keyPath && key)
         throw DOMException("DataError")
 
-      for(var name in indexes)
-        indexes[name]._put(value, key)
-      objects[key] = value
+      steps_for_storing_a_record_into_an_object_store(this, value, key, false)
 
       var request = new IDBRequest()
           request.result = value

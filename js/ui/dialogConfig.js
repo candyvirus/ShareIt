@@ -69,6 +69,15 @@ _priv.DialogConfig = function(dialogId, options, shareit)
   $('#Preferences2').click(this.preferencesDialogOpen);
 
 
+  function sharedpoint_added(error)
+  {
+    if(error)
+      console.warn(error);
+
+    else
+      $(self).trigger('sharedpoints.update');
+  }
+
   // Add sharedpoint
   var input = dialog.find('#files');
 
@@ -78,14 +87,7 @@ _priv.DialogConfig = function(dialogId, options, shareit)
 
     policy(function()
     {
-      shareit.sharedpointsManager_addSharedpoint_Folder(files, function(error)
-      {
-        if(error)
-          console.warn(error);
-
-        else
-          $(self).trigger('sharedpoints.update');
-      });
+      shareit.sharedpointsManager_add('FileList', files, sharedpoint_added);
 
       // Reset the input after send the files to hash
       input.val('');
@@ -97,6 +99,30 @@ _priv.DialogConfig = function(dialogId, options, shareit)
     });
   });
 
+
+  var dropzone = document.getElementById('Sharedpoints-tab');
+
+  dropzone.ondrop = function(event)
+  {
+    console.log("Drop")
+
+    var items = e.dataTransfer.items
+
+    for(var i=0; i<items.length; i++)
+    {
+      var entry = items[i].webkitGetAsEntry();
+
+      if(entry.isDirectory)
+        policy(function()
+        {
+          shareit.sharedpointsManager_add('Entry', entry, sharedpoint_added);
+        });
+
+      else
+        console.warn("Entry type (mainly file) for "+entry.name+
+                     " unsupported as sharedpoint")
+    }
+  };
 
   // Backup tab
   // Export

@@ -25,8 +25,6 @@ _priv.Transport_Host_init = function(transport, db)
 
   function generateFileObject(fileentry)
   {
-    var blob = fileentry.file || fileentry.blob;
-    var name = blob.name || fileentry.name;
     var path = '';
     if(fileentry.sharedpoint)
     {
@@ -34,12 +32,15 @@ _priv.Transport_Host_init = function(transport, db)
       if(fileentry.path != '')
         path += '/' + fileentry.path;
     }
+    var name = fileentry.file ? fileentry.file.name : fileentry.name
+    var blob = fileentry.file || fileentry.blob || fileentry;
 
     var result =
     {
-      hash: fileentry.hash,
       path: path,
       name: name,
+
+      hash: fileentry.hash,
       size: blob.size,
       type: blob.type
     };
@@ -124,6 +125,8 @@ _priv.Transport_Host_init = function(transport, db)
    */
   transport.addEventListener('transfer.query', function(event)
   {
+    // [ToDo] check when fragment is not available and return error
+
     var hash = event.data[0];
     var chunk = event.data[1];
 
@@ -141,7 +144,16 @@ _priv.Transport_Host_init = function(transport, db)
     var start = chunk * module.chunksize;
     var stop = start + module.chunksize;
 
-    db.files_get(hash, function(error, fileentry)
+    function readSlice(blob)
+    {
+      var filesize = parseInt(blob.size);
+      if(stop > filesize)
+         stop = filesize;
+
+      reader.readAsBinaryString(blob.slice(start, stop));
+    }
+
+    db.files_getAll_byHash(hash, function(error, fileentries)
     {
       if(error)
       {
@@ -149,13 +161,27 @@ _priv.Transport_Host_init = function(transport, db)
         return
       }
 
-      var blob = fileentry.file || fileentry.blob;
+      if(fileentries.length)
+      {
+        // Try to read from a file
+        for(var i=0, fileentry; fileentry=fileentries[i]; i++)
+          if(fileentry.file)
+          {
+            readSlice(fileentry.file)
+            return
+          }
 
-      var filesize = parseInt(blob.size);
-      if(stop > filesize)
-         stop = filesize;
+        // Try to read from a blob
+        // [ToDo] check when fragment is not available and return error
+        for(var i=0, fileentry; fileentry=fileentries[i]; i++)
+          if(fileentry.blob)
+          {
+            readSlice(fileentry.blob)
+            return
+          }
+      }
 
-      reader.readAsBinaryString(blob.slice(start, stop));
+      console.warn("File "+hash+" was not found to be readed")
     });
   });
 }

@@ -97,14 +97,29 @@ module.Remote = function(channel, onsuccess)
     call('files_sharing', callback)
   }
 
+  this.fileslist_disableUpdates = function(uid, callback)
+  {
+    call('fileslist_disableUpdates', uid, callback)
+  }
+
+  this.fileslist_query = function(uid, callback)
+  {
+    call('fileslist_query', uid, callback)
+  }
+
   this.numPeers = function(callback)
   {
     call('numPeers', callback)
   }
 
-  this.sharedpointsManager_addSharedpoint_Folder = function(files, callback)
+  this.searchEngine_search = function(query, callback)
   {
-    call('sharedpointsManager_addSharedpoint_Folder', files, callback)
+    call('searchEngine_search', query, callback)
+  }
+
+  this.sharedpointsManager_add = function(type, root, callback)
+  {
+    call('sharedpointsManager_add', type, root, callback)
   }
 
   this.sharedpointsManager_getSharedpoints = function(callback)
