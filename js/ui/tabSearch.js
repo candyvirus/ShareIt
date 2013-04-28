@@ -208,13 +208,10 @@ _priv.TabSearch = function(query, tabsId, onclickFactory)
               }
 
           a.appendChild(document.createTextNode(duplicate.name));
-
           td.appendChild(a);
-
           tr.appendChild(td);
+          this.tbody.appendChild(tr);
         }
-
-        this.tbody.appendChild(tr);
       }
     }
   };
