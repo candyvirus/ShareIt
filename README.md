@@ -65,8 +65,14 @@ recommended to don't use this centralized, single-point-of-failure platforms.
 
 Regarding to the browser, because of the usage of DataChannel polyfile currently
 it's only compatible with Chromium v23, v24 & v25, being incompatible with higher
-ones because changes on the PeerConnection API. Now that the WebRTC specification
-is more stable this will be fixed in the near future.
+ones because changes on the PeerConnection API. You can find for Windows (and on
+Linux using Wine) the portable versions at [SourceForge]
+(http://sourceforge.net/projects/portableapps/files/Google%20Chrome%20Portable/Additional%20Versions)
+. After that, you'll need to enable the RTCPeerConnection support on the
+[about:flags](about:flags) panel, and after that you'll be able to run ShareIt!
+sucessfully. Now that the WebRTC specification is more stable and enable by
+default on latest versions of the browsers, this will be fixed in the near future
+and would be used flawlessly.
 
 You can test it locally opening two browser tabs, but it should work also if used
 between several machines if there are no symetric NATs on both ends (it was
