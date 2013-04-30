@@ -69,7 +69,7 @@ ones because changes on the PeerConnection API. You can find for Windows (and on
 Linux using Wine) the portable versions at [SourceForge]
 (http://sourceforge.net/projects/portableapps/files/Google%20Chrome%20Portable/Additional%20Versions)
 . After that, you'll need to enable the RTCPeerConnection support on the
-[about:flags](about:flags) panel, and after that you'll be able to run ShareIt!
+[chrome://flags](chrome://flags) panel, and after that you'll be able to run ShareIt!
 sucessfully. Now that the WebRTC specification is more stable and enable by
 default on latest versions of the browsers, this will be fixed in the near future
 and would be used flawlessly.
