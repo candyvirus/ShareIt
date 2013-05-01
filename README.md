@@ -70,9 +70,14 @@ Linux using Wine) the portable versions at [SourceForge]
 (http://sourceforge.net/projects/portableapps/files/Google%20Chrome%20Portable/Additional%20Versions)
 . After that, you'll need to enable the RTCPeerConnection support on the
 [chrome://flags](chrome://flags) panel, and after that you'll be able to run ShareIt!
-sucessfully. Now that the WebRTC specification is more stable and enable by
-default on latest versions of the browsers, this will be fixed in the near future
-and would be used flawlessly.
+sucessfully.
+
+Experimental (and working! :-D ) support for native DataChannels is available on
+[Chromium_v28](https://github.com/piranna/ShareIt/tree/Chromium_v28) branch and
+will be merged with the main one in the near future. Take in account that due by
+current limitations on Chromium native DataChannels transfer files will need to be
+smaller that 1K until reliable native support is implemented (or I use [reliable]
+(https://github.com/michellebu/reliable) library, whatever comes first... :-) )
 
 You can test it locally opening two browser tabs, but it should work also if used
 between several machines if there are no symetric NATs on both ends (it was
