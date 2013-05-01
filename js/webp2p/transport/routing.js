@@ -160,6 +160,23 @@ _priv.Transport_Routing_init = function(transport, peersManager)
    * @param {String} sdp Content of the SDP object.
    * @param {Array} [route] Route path where this offer have circulated.
    */
+  transport.sendCandidate = function(dest, candidate, route)
+  {
+    var data = {type: 'candidate',
+                candidate:  candidate}
+    if(route)
+      data.route = route;
+
+    transport.send(data, dest);
+  };
+
+
+  /**
+   * Send a RTCPeerConnection offer through the active handshake channel
+   * @param {UUID} uid Identifier of the other peer.
+   * @param {String} sdp Content of the SDP object.
+   * @param {Array} [route] Route path where this offer have circulated.
+   */
   transport.sendOffer = function(dest, sdp, route)
   {
     var data = {type: 'offer',
