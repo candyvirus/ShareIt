@@ -87,14 +87,13 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       pc.close();
     };
 
-    channel.onopen = function()
-    {
-      var event = document.createEvent("Event");
-          event.initEvent('channel',true,true);
-          event.channel = channel
+    console.log ("channel.onopen")
 
-      self.dispatchEvent(event);
-    }
+    var event = document.createEvent("Event");
+        event.initEvent('channel',true,true);
+        event.channel = channel
+
+    self.dispatchEvent(event);
   }
 
 
@@ -104,7 +103,7 @@ module.PeersManager = function(handshake_servers_file, stun_server)
    * @param {String} sdp Session Description Protocol data of the other peer.
    * @return {RTCPeerConnection} The (newly created) peer.
    */
-  this.onoffer = function(uid, sdp)
+  this.onoffer = function(uid, sdp, incomingChannel)
   {
     // Search the peer between the list of currently connected peers
     var peer = peers[uid];
@@ -112,11 +111,16 @@ module.PeersManager = function(handshake_servers_file, stun_server)
     // Peer is not connected, create a new channel
     if(!peer)
     {
-      peer = createPeerConnection(uid);  // incomingChannel
+      peer = createPeerConnection(uid, incomingChannel);
       peer.ondatachannel = function(event)
       {
-        console.log('Created datachannel (ondatachannel) with peer ' + uid);
-        initDataChannel(peer, event.channel, uid);
+        var channel = event.channel
+
+        channel.onopen = function()
+        {
+          console.log('Created datachannel (ondatachannel) with peer ' + uid);
+          initDataChannel(peer, channel, uid);
+        }
       };
       peer.onerror = function(event)
       {
@@ -155,6 +159,17 @@ module.PeersManager = function(handshake_servers_file, stun_server)
     else if(onerror)
       onerror(uid);
   };
+
+  this.oncandidate = function(uid, candidate, onerror)
+  {
+    // Search the peer on the list of currently connected peers
+    var peer = peers[uid];
+    if(peer)
+      peer.addIceCandidate(new RTCIceCandidate(candidate));
+    else if(onerror)
+      onerror(uid);
+  }
+
 
   // Init handshake manager
   var handshakeManager = new _priv.HandshakeManager(handshake_servers_file, this);
@@ -221,35 +236,20 @@ module.PeersManager = function(handshake_servers_file, stun_server)
         initDataChannel(peer, channel, uid);
 
         if(cb)
-        {
-          channel.onopen = function(event)
-          {
-            cb(null, uid);
-          };
-          channel.onerror = function(event)
-          {
-            cb({uid: uid, peer:peer, channel:channel});
-          };
-        }
+           cb(null, uid);
       };
 //    });
 
-//      if(cb)
-//      {
-//        channel.addEventListener('open', function(event)
-//        {
-//          cb(null, uid);
-//        });
-//        channel.onerror = function(event)
-//        {
-//          cb({uid: uid, peer:peer, channel:channel});
-//        };
-//      }
+      if(cb)
+        channel.onerror = function(event)
+        {
+          cb({uid: uid, peer:peer, channel:channel});
+        };
 
       // Send offer to new PeerConnection
       peer.createOffer(function(offer)
       {
-        console.log("createOffer: "+uid+", "+offer.sdp);
+        console.log("[createOffer]: "+uid+"\n"+offer.sdp);
 
         // Send the offer only for the incoming channel
         if(incomingChannel)
