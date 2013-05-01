@@ -73,7 +73,7 @@ _priv.Transport_Routing_init = function(transport, peersManager)
 //    {
 
       // Create PeerConnection
-      var pc = peersManager.onoffer(from, sdp, function(uid, event)
+      var pc = peersManager.onoffer(from, sdp, transport, function(uid, event)
       {
         console.error('Error creating DataChannel with peer ' + uid);
         console.error(event);
@@ -82,6 +82,8 @@ _priv.Transport_Routing_init = function(transport, peersManager)
       // Send answer
       pc.createAnswer(function(answer)
       {
+        console.log("[createAnswer]: "+from+"\n"+answer.sdp);
+
         transport.sendAnswer(from, answer.sdp, route);
 
         pc.setLocalDescription(new RTCSessionDescription(
@@ -181,6 +183,22 @@ _priv.Transport_Routing_init = function(transport, peersManager)
 
 
   /**
+   * Receive and process a 'candidate' message
+   */
+  transport.addEventListener('candidate', function(event)
+  {
+    var from      = event.from;
+    var candidate = event.candidate;
+    var route     = event.route;
+
+    peersManager.oncandidate(from, candidate, function(uid)
+    {
+      console.error("[routing.candidate] PeerConnection '" + uid + "' not found");
+    });
+  })
+
+
+  /**
    * Send a RTCPeerConnection answer through the active handshake channel
    * @param {UUID} uid Identifier of the other peer.
    * @param {String} sdp Content of the SDP object.
@@ -202,6 +220,23 @@ _priv.Transport_Routing_init = function(transport, peersManager)
 //      }
 
     transport.send(data, orig);
+  };
+
+
+  /**
+   * Send a RTCPeerConnection offer through the active handshake channel
+   * @param {UUID} uid Identifier of the other peer.
+   * @param {String} sdp Content of the SDP object.
+   * @param {Array} [route] Route path where this offer have circulated.
+   */
+  transport.sendCandidate = function(dest, candidate, route)
+  {
+    var data = {type: 'candidate',
+                candidate:  candidate}
+    if(route)
+      data.route = route;
+
+    transport.send(data, dest);
   };
 
 
