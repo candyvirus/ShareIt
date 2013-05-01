@@ -84,7 +84,7 @@ module.UI = function(shareit)
         shareit.connectTo(uid, null, function(error, channel)
         {
           if(error)
-            console.error(error);
+            alert(error);
           else
             tabsMain.openOrCreate('peer', uid);
         });
