@@ -87,13 +87,16 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       pc.close();
     };
 
-    console.log ("channel.onopen")
+    channel.addEventListener('open', function(event)
+    {
+      console.log('Created datachannel with peer ' + uid);
 
-    var event = document.createEvent("Event");
-        event.initEvent('channel',true,true);
-        event.channel = channel
+      var event = document.createEvent("Event");
+          event.initEvent('channel',true,true);
+          event.channel = channel
 
-    self.dispatchEvent(event);
+      self.dispatchEvent(event);
+    })
   }
 
 
@@ -114,13 +117,7 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       peer = createPeerConnection(uid, incomingChannel);
       peer.ondatachannel = function(event)
       {
-        var channel = event.channel
-
-        channel.onopen = function()
-        {
-          console.log('Created datachannel (ondatachannel) with peer ' + uid);
-          initDataChannel(peer, channel, uid);
-        }
+        initDataChannel(peer, event.channel, uid);
       };
       peer.onerror = function(event)
       {
@@ -228,23 +225,19 @@ module.PeersManager = function(handshake_servers_file, stun_server)
         };
 
       var channel = peer.createDataChannel('webp2p', {reliable: false});
-
-//    channel.addEventListener('open', function(event)
-      channel.onopen = function(event)
-      {
-        console.log('Created datachannel (open) with peer ' + uid);
-        initDataChannel(peer, channel, uid);
-
-        if(cb)
-           cb(null, uid);
-      };
-//    });
+      initDataChannel(peer, channel, uid);
 
       if(cb)
+      {
+        channel.addEventListener('open', function(event)
+        {
+          cb(null, uid);
+        });
         channel.onerror = function(event)
         {
           cb({uid: uid, peer:peer, channel:channel});
         };
+      }
 
       // Send offer to new PeerConnection
       peer.createOffer(function(offer)
