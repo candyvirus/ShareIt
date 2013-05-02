@@ -56,6 +56,8 @@ function Transport_Presence_init(transport, peersManager, max_connections)
  */
 _priv.HandshakeManager = function(json_uri, peersManager)
 {
+  EventTarget.call(this);
+
   var self = this;
 
   var channels = {};
@@ -113,14 +115,16 @@ _priv.HandshakeManager = function(json_uri, peersManager)
     channel.uid = type;
     channels[type] = channel;
 
-    channel.onopen = function()
+    channel.addEventListener('open', function(event)
     {
       status = 'connected';
 
-      if(self.onopen)
-         self.onopen();
-    };
-    channel.onclose = function()
+      var event = document.createEvent("Event");
+          event.initEvent('open',true,true);
+
+      self.dispatchEvent(event);
+    });
+    channel.addEventListener('close', function(event)
     {
       status = 'connecting';
 
@@ -129,7 +133,7 @@ _priv.HandshakeManager = function(json_uri, peersManager)
 
       // Try to get an alternative handshake channel
       nextHandshake(configuration);
-    };
+    });
   }
 
 

@@ -80,12 +80,12 @@ module.PeersManager = function(handshake_servers_file, stun_server)
 
     _priv.Transport_Routing_init(channel, self);
 
-    channel.onclose = function()
+    channel.addEventListener('close', function(event)
     {
       delete pc._channel;
 
       pc.close();
-    };
+    });
 
     channel.addEventListener('open', function(event)
     {
@@ -115,10 +115,13 @@ module.PeersManager = function(handshake_servers_file, stun_server)
     if(!peer)
     {
       peer = createPeerConnection(uid, incomingChannel);
-      peer.ondatachannel = function(event)
+      peer.addEventListener('datachannel', function(event)
       {
-        initDataChannel(peer, event.channel, uid);
-      };
+        var channel = new Reliable(event.channel)
+            channel.label = event.channel.label
+
+        initDataChannel(peer, channel, uid);
+      })
       peer.onerror = function(event)
       {
         if(onerror)
@@ -224,7 +227,7 @@ module.PeersManager = function(handshake_servers_file, stun_server)
           cb({uid: uid, peer:peer});
         };
 
-      var channel = peer.createDataChannel('webp2p', {reliable: false});
+      var channel = peer.createDataChannel('webp2p');
       initDataChannel(peer, channel, uid);
 
       if(cb)
