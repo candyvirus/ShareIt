@@ -166,11 +166,6 @@ _priv.DB_init = function(onsuccess)
       {
         callback(event.target.errorCode);
       };
-      if(onerror != undefined)
-        request.onerror = function(event)
-        {
-          onerror(event.target.errorCode);
-        };
     };
 
     /**

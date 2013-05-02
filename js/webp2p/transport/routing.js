@@ -4,57 +4,6 @@ var _priv = module._priv = module._priv || {}
 _priv.Transport_Routing_init = function(transport, peersManager)
 {
   /**
-   * Send a RTCPeerConnection offer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this offer have circulated.
-   */
-  transport.sendOffer = function(dest, sdp, route)
-  {
-    if(route == undefined)
-       route = [];
-
-    if(transport.isPubsub)
-      route.push(peersManager.uid);
-
-    console.debug('send offer', dest, route);
-    transport.emit('offer', dest, sdp, route);
-  };
-
-  /**
-   * Send a RTCPeerConnection answer through the active handshake channel
-   * @param {UUID} uid Identifier of the other peer.
-   * @param {String} sdp Content of the SDP object.
-   * @param {Array} [route] Route path where this answer have circulated.
-   */
-  transport.sendAnswer = function(orig, sdp, route)
-  {
-    if(transport.isPubsub)
-      // Run over all the route peers looking for possible "shortcuts"
-      for(var i=0, uid; uid=route[i]; i++)
-        if(uid == transport.uid)
-        {
-          route.length = i;
-          break;
-        }
-
-    console.debug('send answer', orig, route);
-    transport.emit('answer', orig, sdp, route);
-  };
-
-  transport.sendCandidate = function(dest, candidate, route)
-  {
-    if(route == undefined)
-      route = []
-
-    if(transport.isPubsub)
-      route.push(peersManager.uid)
-
-    console.debug('send candidate', dest, route)
-    transport.emit('candidate', dest, candidate, route);
-  }
-
-  /**
    * Receive and process an 'offer' message
    */
   transport.addEventListener('offer', function(event)
