@@ -83,6 +83,7 @@ _priv.HandshakeManager = function(json_uri, peersManager)
     }
   }
 
+
   /**
    * Get a random handshake channel or test for the next one
    * @param {Object} configuration Handshake servers configuration.
@@ -148,6 +149,7 @@ _priv.HandshakeManager = function(json_uri, peersManager)
 
   // Request the handshake servers configuration file
   var http_request = new XMLHttpRequest();
+
   http_request.open('GET', json_uri);
   http_request.onload = function()
   {
@@ -168,6 +170,7 @@ _priv.HandshakeManager = function(json_uri, peersManager)
            self.onerror('Handshake servers configuration is empty');
       }
     }
+
     else if(self.onerror)
       self.onerror('Unable to fetch handshake servers configuration');
   };

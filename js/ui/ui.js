@@ -99,6 +99,9 @@ module.UI = function(shareit)
   });
 
 
+  /**
+   * User initiated process to connect to a remote peer asking for the UID
+   */
   function ConnectUser()
   {
     alert("There's no routing available, wait some more seconds");

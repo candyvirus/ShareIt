@@ -278,7 +278,7 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       if(peer._channel.readyState == 'open')
         cb(null, uid);
 
-      // Channel is not yet open
+      // Channel is not ready, call the callback when it's opened
       else
         peer._channel.addEventListener('open', function(event)
         {
@@ -304,6 +304,7 @@ module.PeersManager = function(handshake_servers_file, stun_server)
 
     // Handshake servers channels
     var handshakeChannels = handshakeManager.getChannels();
+
     for(var uid in handshakeChannels)
       if(handshakeChannels.hasOwnProperty(uid))
         channels[uid] = handshakeChannels[uid];
