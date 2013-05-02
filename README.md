@@ -55,22 +55,35 @@ It is currently publicly hosted on
 (development, cutting-edge instance. It would not work...)
 
 The peer connections are managed by an external handshake channel. Currently is
-being used [Jappix](https://jappix.com) annonimous XMPP server and it's being
+being used [Jappix](https://jappix.com) anonymous XMPP server and it's being
 researched to use some more standard and distributed handshake protocols in an
 anonymous way. Previously it was being used the [PubNub](http://www.pubnub.com)
 pubsub platform, and the [SimpleSignaling]
 (https://github.com/piranna/SimpleSignaling) server using a test server hosted
 on Nodejitsu, but now althought maintained they are deprecated and it's
-recommended to don't use this centrilized, single-point-of-failure platforms.
+recommended to don't use this centralized, single-point-of-failure platforms.
 
-Regarding to the browser, because of the usage of the DataChannels polyfiles
-currently it's only compatible with Chromium v23, v24 & v25, being incompatible
-with higher ones because changes on the PeerConnection API. Now that the WebRTC
-specification is more stable this will be fixed in the near future. You can test
-it locally opening two browser tabs, but it should work also if used between
-several machines (it was succesfully tested to transfer files through the wild
-Internet from Finland to Spain... :-) ). Due to its architecture, it can work
-between different domains, too.
+Regarding to the browser, because of the usage of DataChannel polyfile currently
+it's only compatible with Chromium v23, v24 & v25, being incompatible with higher
+ones because changes on the PeerConnection API. You can find for Windows (and on
+Linux using Wine) the portable versions at [SourceForge]
+(http://sourceforge.net/projects/portableapps/files/Google%20Chrome%20Portable/Additional%20Versions)
+. After that, you'll need to enable the RTCPeerConnection support on the
+[chrome://flags](chrome://flags) panel, and after that you'll be able to run ShareIt!
+sucessfully.
+
+Experimental (and working! :-D ) support for native DataChannels is available on
+[Chromium_v28](https://github.com/piranna/ShareIt/tree/Chromium_v28) branch and
+will be merged with the main one in the near future. Take in account that due by
+current limitations on Chromium native DataChannels transfer files will need to be
+smaller that 1K until reliable native support is implemented (or I use [reliable]
+(https://github.com/michellebu/reliable) library, whatever comes first... :-) )
+
+You can test it locally opening two browser tabs, but it should work also if used
+between several machines if there are no symetric NATs on both ends (it was
+succesfully tested to transfer files through the wild Internet from Finland to
+Spain... :-) ). Due to its architecture, it can work between tabs launched from
+different domains, too.
 
 ## External libraries
 ### UI

@@ -7,7 +7,8 @@
 
 
 PRODUCTION_BRANCH="gh-pages"
-PRODUCTION_REMOVE="daemon doc html_basic test_images COLLABORATE.md deploy.sh README.md lib/README.md"
+PRODUCTION_REMOVE="daemon doc html_basic test_images COLLABORATE.md deploy.sh README.md"
+PRODUCTION_REMOVE=$(PRODUCTION_REMOVE)" lib/README.md js/shareit-core/doc js/webp2p/doc"
 
 
 echo
