@@ -7,8 +7,10 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
 
   var tabs = $('#' + tabsId);
 
-  tabs.tabs({
-    activate: function(event, ui) {
+  tabs.tabs(
+  {
+    activate: function(event, ui)
+    {
       $('#Home-tab').detach();
     },
 
@@ -121,7 +123,7 @@ _priv.TabsMain = function(tabsId, shareit, preferencesDialogOpen)
         case 'Downloading':
           if(tabDownloading.dirty)
              tabDownloading_update();
-          break;
+        break;
 
         case 'Sharing':
           if(tabSharing.dirty)

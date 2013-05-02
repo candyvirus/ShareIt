@@ -2,7 +2,6 @@
  * Show a dialog with the usage policy of the webapp and checks if it's accepted
  * @param {Function} onaccept Callback if policy was previously accepted.
  */
-
 function policy(onaccept, oncancel)
 {
   function check()
@@ -70,19 +69,19 @@ function policy(onaccept, oncancel)
       switch(this.status)
       {
         case 200:  // Ok
-          {
-            // Get policy modification date
-            var lastModified = http_request.getResponseHeader('Last-Modified') || 0; // January 1, 1970
-            policy.lastModified = (new Date(lastModified)).getTime();
+        {
+          // Get policy modification date
+          var lastModified = http_request.getResponseHeader('Last-Modified') || 0; // January 1, 1970
+          policy.lastModified = (new Date(lastModified)).getTime();
 
-            // Set the policy text on the dialog
-            policy.dialog = $('#dialog-policy');
-            policy.dialog.html(http_request.response);
+          // Set the policy text on the dialog
+          policy.dialog = $('#dialog-policy');
+          policy.dialog.html(http_request.response);
 
-            // Check if policy was accepted
-            check();
-          }
-          break;
+          // Check if policy was accepted
+          check();
+        }
+        break;
 
         default:  // Error
           console.error('There was an error loading the Usage Policy');

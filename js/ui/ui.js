@@ -84,7 +84,7 @@ module.UI = function(shareit)
         shareit.connectTo(uid, null, function(error, channel)
         {
           if(error)
-            console.error(error);
+            alert(error);
           else
             tabsMain.openOrCreate('peer', uid);
         });
@@ -99,6 +99,9 @@ module.UI = function(shareit)
   });
 
 
+  /**
+   * User initiated process to connect to a remote peer asking for the UID
+   */
   function ConnectUser()
   {
     alert("There's no routing available, wait some more seconds");

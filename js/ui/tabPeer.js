@@ -152,7 +152,7 @@ _priv.TabPeer = function(uid, tabsId, preferencesDialogOpen, onclickFactory)
   {
     var prevPath = '';
 
-    for(var i = 0, fileentry; fileentry = fileslist[i]; i++)
+    for(var i=0, fileentry; fileentry=fileslist[i]; i++)
     {
       // Folder
       var path = fileentry.path;
