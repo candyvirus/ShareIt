@@ -1,15 +1,18 @@
 # ShareIt! - Pure Javascript Peer to Peer filesharing
 
+P2P filesharing application running inside the web browser.
+No install, no config, no problems: just ShareIt! ;-)
+
 Jesús Leganés Combarro "Piranna" - [piranna@gmail.com]
 
-Based on code from Rich Jones - rich@[gun.io](http://gun.io)
+ShareIt! is a "Peer to Peer" filesharing system written in pure Javascript that
+runs inside your web browser like a normal web page that don't need servers
+thanks to [WebRTC](http://www.webrtc.org) technology.
 
-ShareIt! is a "Peer to Peer" filesharing system written in pure Javascript and
-based on the [DirtyShare](https://github.com/Miserlou/DirtyShare)
-proof-of-concept by Rich Jones.
-
-This project is also candidate for the [Universitary Free Software Championship]
-(http://www.concursosoftwarelibre.org/1213).
+This project was finalist for the [OpenITP](http://openitp.org)'s first round of
+2013 project funding and is currently candidate for the spanish national
+[Universitary Free Software Championship](http://www.concursosoftwarelibre.org/1213)
+2013.
 
 If you will fork the project (and more if you want to do modifications) please
 send me an email just to let me know :-)
@@ -18,10 +21,15 @@ send me an email just to let me know :-)
 
 File transfers in ShareIt! is build over WebRTC PeerConnection [DataChannels]
 (http://dev.w3.org/2011/webrtc/editor/webrtc.html#rtcdatachannel) so they could
-be transfered directly between peers. Currently  it's being used an encrypted
+be transfered directly between peers. Currently it's being used an encrypted
 [DataChannel polyfill](https://github.com/piranna/DataChannel-polyfill) using
 secure WebSockets, but in the near future (version 2.0) they will be used native
-DataChannels. This make it perfect for anonymity.
+DataChannels, making it perfect for anonymity. You can take a preview on branch
+[Chromium_v28](https://github.com/piranna/ShareIt/tree/Chromium_v28).
+
+Source code from [DirtyShare](https://github.com/Miserlou/DirtyShare)
+proof-of-concept by Rich Jones (rich@[gun.io](http://gun.io)) was used as basis
+for the initial stages of development.
 
 Let's make a purely browser based, ad-free, Free and Open Source private and
 anonymous distributed filesharing system!
@@ -63,27 +71,28 @@ pubsub platform, and the [SimpleSignaling]
 on Nodejitsu, but now althought maintained they are deprecated and it's
 recommended to don't use this centralized, single-point-of-failure platforms.
 
-Regarding to the browser, because of the usage of DataChannel polyfile currently
-it's only compatible with Chromium v23, v24 & v25, being incompatible with higher
-ones because changes on the PeerConnection API. You can find for Windows (and on
-Linux using Wine) the portable versions at [SourceForge]
-(http://sourceforge.net/projects/portableapps/files/Google%20Chrome%20Portable/Additional%20Versions)
-. After that, you'll need to enable the RTCPeerConnection support on the
-[chrome://flags](chrome://flags) panel, and after that you'll be able to run ShareIt!
-sucessfully.
-
-Experimental (and working! :-D ) support for native DataChannels is available on
-[Chromium_v28](https://github.com/piranna/ShareIt/tree/Chromium_v28) branch and
-will be merged with the main one in the near future. Take in account that due by
-current limitations on Chromium native DataChannels transfer files will need to be
-smaller that 1K until reliable native support is implemented (or I use [reliable]
-(https://github.com/michellebu/reliable) library, whatever comes first... :-) )
-
-You can test it locally opening two browser tabs, but it should work also if used
-between several machines if there are no symetric NATs on both ends (it was
+You can test it locally opening two browser tabs, but it should work also if
+used between several machines if there are no symetric NATs on both ends (it was
 succesfully tested to transfer files through the wild Internet from Finland to
 Spain... :-) ). Due to its architecture, it can work between tabs launched from
 different domains, too.
+
+## Compatibility
+
+Because of the usage of DataChannel polyfile, currently it's only compatible
+with Chromium v23, v24 & v25 due to incompatible changes on the PeerConnection
+API on higher versions. You can find portable versions for Windows (and on Linux
+using Wine) at [SourceForge]
+(http://sourceforge.net/projects/portableapps/files/Google%20Chrome%20Portable/Additional%20Versions)
+. Later, you'll need to enable the RTCPeerConnection support on the
+[chrome://flags](chrome://flags) panel, and after that you'll be able to run
+ShareIt! sucessfully.
+
+Experimental (and working! :-D ) support for native DataChannels is available on
+[Chromium_v28](https://github.com/piranna/ShareIt/tree/Chromium_v28) branch
+using the [reliable](https://github.com/michellebu/reliable) library due to
+current limitations on Chromium native DataChannels, although is terrible slow.
+It's spected that native reliable support will be available in the next weeks.
 
 ## External libraries
 ### UI
