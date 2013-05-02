@@ -20,7 +20,6 @@ module.PeersManager = function(handshake_servers_file, stun_server)
   EventTarget.call(this);
 
   var peers = {};
-  var channels = {};
 
   var self = this;
 
@@ -76,14 +75,8 @@ module.PeersManager = function(handshake_servers_file, stun_server)
   function initDataChannel(pc, channel, uid)
   {
     channel.uid = uid;
-    channel.onclose = function()
-    {
-      delete channels[uid]
 
-      pc.close();
-    };
-
-    channels[uid] = channel
+    pc._channel = channel;
 
     _priv.Transport_Routing_init(channel, self);
 
@@ -178,41 +171,14 @@ module.PeersManager = function(handshake_servers_file, stun_server)
   }
 
 
-  this.oncandidate = function(uid, candidate)
-  {
-    // Search the peer between the list of currently connected peers
-    var peer = peers[uid]
-
-    // Peer is not connected, create a new channel
-    if(!peer)
-    {
-      peer = createPeerConnection(uid)
-      peer.ondatachannel = function(event)
-      {
-        console.log("Created datachannel with peer "+uid)
-        initDataChannel(peer, event.channel, uid)
-      }
-      peer.onerror = function(event)
-      {
-        if(onerror)
-          onerror(uid, event)
-      }
-    }
-
-    // Process offer
-    peer.addIceCandidate(new RTCIceCandidate(candidate));
-
-    return peer
-  }  
-
   // Init handshake manager
   var handshakeManager = new _priv.HandshakeManager(handshake_servers_file, this);
   handshakeManager.onerror = function(error)
   {
-    console.error(event);
-    alert(event);
+    console.error(error);
+    alert(error);
   };
-  handshakeManager.onopen = function(event)
+  handshakeManager.onopen = function()
   {
     var event = document.createEvent("Event");
         event.initEvent('uid',true,true);
@@ -247,10 +213,10 @@ module.PeersManager = function(handshake_servers_file, stun_server)
   this.connectTo = function(uid, incomingChannel, cb)
   {
     // Search the peer between the list of currently connected peers
-    var channel = channels[uid];
+    var peer = peers[uid];
 
     // Peer is not connected, create a new channel
-    if(!channel)
+    if(!peer)
     {
       // Create PeerConnection
       peer = createPeerConnection(uid, incomingChannel);
@@ -314,34 +280,37 @@ module.PeersManager = function(handshake_servers_file, stun_server)
 
       // Channel is not ready, call the callback when it's opened
       else
-        channel.addEventListener('open', function(event)
+        peer._channel.addEventListener('open', function(event)
         {
           cb(null, uid);
         })
     }
-  }
+  };
 
   /**
    * Get the channels of all the connected peers and handshake servers
    */
   this.getChannels = function()
   {
-    var result = {}
+    var channels = {};
 
     // Peers channels
-    for(var uid in channels)
-      if(channels.readyState == 'open')
-        result[uid] = channels[uid]
+    for(var uid in peers)
+    {
+      var channel = peers[uid]._channel;
+      if(channel)
+        channels[uid] = channel;
+    }
 
     // Handshake servers channels
     var handshakeChannels = handshakeManager.getChannels();
 
     for(var uid in handshakeChannels)
       if(handshakeChannels.hasOwnProperty(uid))
-        result[uid] = handshakeChannels[uid]
+        channels[uid] = handshakeChannels[uid];
 
-    return result
-  }
+      return channels;
+  };
 
 
   this.handshakeDisconnected = function()
