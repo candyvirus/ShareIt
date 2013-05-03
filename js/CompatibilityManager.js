@@ -79,24 +79,27 @@ function CompatibilityManager()
     function showDialog(icon, msg)
     {
       var alert = $('#dialog-compatibility');
-      alert.find('#icon')[0].src = icon;
-      alert.find('#msg').html(msg);
+          alert.find('#icon')[0].src = icon;
+          alert.find('#msg').html(msg);
 
-      alert.dialog(
-      {
-        modal: true,
-        resizable: false,
-        width: 800,
-
-        buttons:
+      if($.mobile)
+        $.mobile.changePage(alert);
+      else
+        alert.dialog(
         {
-          Ok: function()
+          modal: true,
+          resizable: false,
+          width: 800,
+
+          buttons:
           {
-            $(this).remove();
-//            $(this).dialog("destroy");
+            Ok: function()
+            {
+              $(this).remove();
+//              $(this).dialog("destroy");
+            }
           }
-        }
-      });
+        });
     }
 
     // Browser is not fully compatible, show why if compatibility changed

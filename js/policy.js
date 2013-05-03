@@ -16,42 +16,57 @@ function policy(onaccept, oncancel)
       return;
     }
 
+    function cancel()
+    {
+      policy.dialog.dialog('close');
+
+      // Policy not acepted, remove it
+      localStorage.removeItem('policy_acepted');
+
+      console.warn('Policy was NOT accepted');
+
+      if(oncancel)
+         oncancel();
+    }
+
+    function accept()
+    {
+      policy.dialog.dialog('close');
+
+      // Policy acepted, set date and exec 'onaccept'
+      localStorage.policy_acepted = (new Date()).getTime();
+
+      console.warn('Policy was accepted');
+
+      if(onaccept)
+         onaccept();
+    }
+
     // Policy was not accepted previously or was outdated
     // or we are showing it ('onaccept' callback was not defined)
-    policy.dialog.dialog(
+    if($.mobile)
     {
-      modal: true,
-      resizable: false,
-      width: 800,
+      policy.dialog.find('#Accept').unbind('click');
+      policy.dialog.find('#Accept').click(accept);
 
-      buttons:
+      policy.dialog.find('#Cancel').unbind('click');
+      policy.dialog.find('#Cancel').click(cancel);
+
+      $.mobile.changePage(policy.dialog);
+    }
+    else
+      policy.dialog.dialog(
       {
-        Cancel: function()
+        modal: true,
+        resizable: false,
+        width: 800,
+
+        buttons:
         {
-          $(this).dialog('close');
-
-          // Policy not acepted, remove it
-          localStorage.removeItem('policy_acepted');
-
-          console.warn('Policy was NOT accepted');
-
-          if(oncancel)
-             oncancel();
-        },
-        Accept: function()
-        {
-          $(this).dialog('close');
-
-          // Policy acepted, set date and exec 'onaccept'
-          localStorage.policy_acepted = (new Date()).getTime();
-
-          console.warn('Policy was accepted');
-
-          if(onaccept)
-             onaccept();
+          Cancel: cancel,
+          Accept: accept
         }
-      }
-    });
+      });
   }
 
   // Policy text was loaded previously, check if it's accepted
@@ -76,7 +91,7 @@ function policy(onaccept, oncancel)
 
           // Set the policy text on the dialog
           policy.dialog = $('#dialog-policy');
-          policy.dialog.html(http_request.response);
+          policy.dialog.find('#msg').html(http_request.response);
 
           // Check if policy was accepted
           check();
