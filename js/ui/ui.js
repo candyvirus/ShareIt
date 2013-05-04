@@ -67,6 +67,20 @@ module.UI = function(shareit)
     $('#UID-home, #UID-about').val(uid);
 
 
+    // Prompt UID
+    var promptUID = new _priv.PromptUID('dialog-prompt', function(uid)
+    {
+      // Create connection with the other peer
+      shareit.connectTo(uid, null, function(error, channel)
+      {
+        if(error)
+          alert(error);
+        else
+          tabsMain.openOrCreate('peer', uid);
+      });
+    })
+
+
     /**
      * User initiated process to connect to a remote peer asking for the UID
      */
@@ -77,18 +91,7 @@ module.UI = function(shareit)
 //        $('tools-menu-submenu').popup('close');
 
       // Ask for the peer UID and connect to it
-      var uid = prompt('UID to connect');
-      if(uid != null && uid != '')
-      {
-        // Create connection with the other peer
-        shareit.connectTo(uid, null, function(error, channel)
-        {
-          if(error)
-            alert(error);
-          else
-            tabsMain.openOrCreate('peer', uid);
-        });
-      }
+      promptUID.open();
     }
 
     $('#ConnectUser').unbind('click');
