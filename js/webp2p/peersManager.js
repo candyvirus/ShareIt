@@ -87,16 +87,11 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       pc.close();
     });
 
-    channel.addEventListener('open', function(event)
-    {
-      console.log('Created datachannel with peer ' + uid);
+    var event = document.createEvent("Event");
+        event.initEvent('datachannel',true,true);
+        event.channel = channel
 
-      var event = document.createEvent("Event");
-          event.initEvent('channel',true,true);
-          event.channel = channel
-
-      self.dispatchEvent(event);
-    })
+    self.dispatchEvent(event);
   }
 
 
@@ -117,7 +112,7 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       peer = createPeerConnection(uid, incomingChannel);
       peer.addEventListener('datachannel', function(event)
       {
-        initDataChannel(peer, channel, uid);
+        initDataChannel(peer, event.channel, uid);
       })
       peer.onerror = function(event)
       {

@@ -73,35 +73,40 @@ _priv.FilesManager = function(db, peersManager)
   }
 
 
-  peersManager.addEventListener('channel', function(event)
+  peersManager.addEventListener('datachannel', function(event)
   {
     var channel = event.channel
 
-    _priv.Transport_init(channel);
-    _priv.Transport_Host_init(channel, db);
-    _priv.Transport_Peer_init(channel, db, self);
-//  _priv.Transport_Search_init(channel, db, self);
-
-    self.addEventListener('file.added', function(event)
+    channel.addEventListener('open', function(event)
     {
-      var fileentry = event.fileentry;
+      console.log('Created datachannel with peer ' + channel.uid);
 
-      channel._send_file_added(fileentry);
-    });
-    self.addEventListener('file.deleted', function(event)
-    {
-      var fileentry = event.fileentry;
+      _priv.Transport_init(channel);
+      _priv.Transport_Host_init(channel, db);
+      _priv.Transport_Peer_init(channel, db, self);
+//    _priv.Transport_Search_init(channel, db, self);
 
-      channel._send_file_deleted(fileentry);
-    });
+      self.addEventListener('file.added', function(event)
+      {
+        var fileentry = event.fileentry;
 
-    // Quick hack for search
-    var SEND_UPDATES = 1;
-//    var SMALL_FILES_ACCELERATOR = 2
-    var flags = SEND_UPDATES;
-//    if()
-//      flags |= SMALL_FILES_ACCELERATOR
-    channel.fileslist_query(flags)
+        channel._send_file_added(fileentry);
+      });
+      self.addEventListener('file.deleted', function(event)
+      {
+        var fileentry = event.fileentry;
+
+        channel._send_file_deleted(fileentry);
+      });
+
+      // Quick hack for search
+      var SEND_UPDATES = 1;
+//      var SMALL_FILES_ACCELERATOR = 2
+      var flags = SEND_UPDATES;
+//      if()
+//        flags |= SMALL_FILES_ACCELERATOR
+      channel.fileslist_query(flags)
+    })
   })
 
 
