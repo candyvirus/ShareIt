@@ -203,18 +203,15 @@ function DCPF_install(ws_url)
 //    var dispatchEvent = RTCPeerConnection.prototype.dispatchEvent;
 //    RTCPeerConnection.prototype.dispatchEvent = function(event)
 //    {
-//      if(type == 'datachannel')
+//      if(type == 'datachannel' && !(event.channel instanceof Reliable))
 //      {
-//        event.channel = new Reliable(event.channel)
+//        var channel = event.channel
 //
-//        var listenerArray = listeners[event.type];
-//
-//        if(listenerArray !== undefined)
-//          for(var i=0, l=listenerArray.length; i<l; i++)
-//            listenerArray[i].call(this, event);
+//        event.channel = new Reliable(channel)
+//        event.channel.label = channel.label
 //      }
-//      else
-//        dispatchEvent.call(this, event)
+//
+//      dispatchEvent.call(this, event)
 //    };
 //
 //    var removeEventListener = RTCPeerConnection.prototype.removeEventListener;

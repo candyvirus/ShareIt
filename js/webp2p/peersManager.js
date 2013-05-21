@@ -117,9 +117,6 @@ module.PeersManager = function(handshake_servers_file, stun_server)
       peer = createPeerConnection(uid, incomingChannel);
       peer.addEventListener('datachannel', function(event)
       {
-        var channel = new Reliable(event.channel)
-            channel.label = event.channel.label
-
         initDataChannel(peer, channel, uid);
       })
       peer.onerror = function(event)
